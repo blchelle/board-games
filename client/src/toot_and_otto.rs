@@ -123,7 +123,7 @@ impl TootAndOtto {
 				//
 				// This would panics, so instead I keep the value as 0 and then
 				// check if the value changes.
-				if col != update_coordinates.0 || row != update_coordinates.1 {
+				if col != update_coordinates.0 {
 					col = update_coordinates.0;
 					row = update_coordinates.1;
 				} else {
