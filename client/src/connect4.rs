@@ -1,13 +1,12 @@
 use std::fmt::{Display, Formatter, Result};
 
 /// A wrapper around the primary `Board` component
-#[derive(Debug)]
 pub struct Connect4 {
 	board: Board,
 }
 
 /// The two colors that can be placed on a Connect 4 board
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub enum PieceColor {
 	RED,
 	YELLOW,
