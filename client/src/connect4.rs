@@ -33,17 +33,15 @@ impl Connect4 {
 	pub fn drop(&mut self, color: PieceColor, col: usize) -> bool {
 		// Checks for some simple input errors
 		if col >= NUM_COLS {
-			println!("Invalid Drop Column");
+			println!("Invalid Drop Column, Try Again.");
 			return false;
 		}
 
 		// Gets the number of pieces in the column and checks if it is full
 		let col_height = self.get_col_height(col);
 
-		println!("{}", col_height);
-
 		if col_height == NUM_ROWS {
-			println!("Column {} is full", col);
+			println!("Column {} is full, Try Again.", col);
 			return false;
 		}
 
@@ -165,7 +163,9 @@ impl Display for Connect4 {
 			print_string.push('\n');
 		}
 
-		write!(f, "{}", print_string)
+		print_string.push_str("0 1 2 3 4 5 6");
+
+		write!(f, "\nCurrent Board:\n{}\n", print_string)
 	}
 }
 
@@ -181,6 +181,26 @@ impl PartialEq for PieceColor {
 				PieceColor::RED => false,
 				PieceColor::YELLOW => true,
 			},
+		}
+	}
+}
+
+impl Display for PieceColor {
+	/// Prints out the piece color
+	fn fmt(&self, f: &mut Formatter) -> Result {
+		match self {
+			PieceColor::RED => write!(f, "{}", "Red"),
+			PieceColor::YELLOW => write!(f, "{}", "Yellow"),
+		}
+	}
+}
+
+impl PieceColor {
+	/// Flips the value of the piece
+	pub fn switch(&self) -> Self {
+		match self {
+			PieceColor::RED => PieceColor::YELLOW,
+			PieceColor::YELLOW => PieceColor::RED,
 		}
 	}
 }
