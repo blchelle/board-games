@@ -67,11 +67,16 @@ impl Connect4 {
 
 	/// Checks to see if a color has one the game
 	pub fn check_for_win(&self, color: PieceColor) -> bool {
-		// Checks a row to see if there is 4 in a row
-		let check_row = |row: usize| -> bool {
-			let mut consecutive_count = 0;
+		// Searches for four in a row along some linear traversal
+		let check_line = |start_y: usize,
+		                  start_x: usize,
+		                  update: Box<dyn Fn(usize, usize) -> (usize, usize)>|
+		 -> bool {
+			let mut col = start_x;
+			let mut row = start_y;
 
-			for col in 0..NUM_COLS {
+			let mut consecutive_count = 0;
+			while row < NUM_ROWS && col < NUM_COLS {
 				match self.board[row][col] {
 					None => consecutive_count = 0,
 					Some(cell_color) => {
@@ -86,49 +91,58 @@ impl Connect4 {
 				if consecutive_count == 4 {
 					return true;
 				}
-			}
 
-			false
-		};
+				let update_coordinates = update(col, row);
 
-		// Checks a column to see if there is 4 in a row
-		let check_col = |col: usize| -> bool {
-			let mut consecutive_count = 0;
-
-			for row in 0..NUM_ROWS {
-				match self.board[row][col] {
-					None => consecutive_count = 0,
-					Some(cell_color) => {
-						if color == cell_color {
-							consecutive_count += 1;
-						} else {
-							consecutive_count = 0
-						}
-					}
-				}
-
-				if consecutive_count == 4 {
-					return true;
+				// This handles an edge case in the down left update where
+				// col would go from 0 to -1 to indicate it goes out of range
+				//
+				// This would panics, so instead I keep the value as 0 and then
+				// check if the value changes.
+				if col != update_coordinates.0 && row != update_coordinates.1 {
+					col = update_coordinates.0;
+					row = update_coordinates.1;
+				} else {
+					return false;
 				}
 			}
 
 			false
 		};
 
-		//
-		// TODO: Check if there is a win along the diagonals
-		//
+		// Update closure functions for the four traversals
+		let row_update = |x: usize, y: usize| -> (usize, usize) { (x + 1, y) };
+		let col_update = |x: usize, y: usize| -> (usize, usize) { (x, y + 1) };
+		let dr_update = |x: usize, y: usize| -> (usize, usize) { (x + 1, y + 1) };
+		let dl_update =
+			|x: usize, y: usize| -> (usize, usize) { (if x == 0 { 0 } else { x - 1 }, y + 1) };
 
 		// Checks all the rows
 		for row in 0..NUM_ROWS {
-			if check_row(row) {
+			if check_line(row, 0, Box::new(row_update)) {
 				return true;
 			}
 		}
 
 		// Checks all the columns
 		for col in 0..NUM_COLS {
-			if check_col(col) {
+			if check_line(0, col, Box::new(col_update)) {
+				return true;
+			}
+		}
+
+		// Checks all the down-right diagonals
+		let dr_starts = [[2, 0], [1, 0], [0, 0], [0, 1], [0, 2], [0, 3]];
+		for point in dr_starts.iter() {
+			if check_line(point[0], point[1], Box::new(dr_update)) {
+				return true;
+			}
+		}
+
+		// Checks all the down-left diagonals
+		let dl_starts = [[1, 6], [1, 6], [0, 6], [0, 5], [0, 4], [0, 3]];
+		for point in dl_starts.iter() {
+			if check_line(point[0], point[1], Box::new(dl_update)) {
 				return true;
 			}
 		}
