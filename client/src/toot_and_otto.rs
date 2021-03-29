@@ -5,7 +5,7 @@ pub struct TootAndOtto {
 	board: Board,
 }
 
-/// The two colors that can be placed on a Connect 4 board
+/// The two pieces that can be placed on a TOOT-n-OTTO board
 #[derive(Copy, Clone)]
 pub enum PieceLetter {
 	T,
@@ -18,7 +18,7 @@ pub enum Player {
 	Two,
 }
 
-/// A 7x6 Connect 4 Board
+/// A 6x4 TOOT-n-OTTO Board
 type Board = [[BoardCell; NUM_COLS]; NUM_ROWS];
 const NUM_COLS: usize = 6;
 const NUM_ROWS: usize = 4;
@@ -27,7 +27,7 @@ const NUM_ROWS: usize = 4;
 type BoardCell = Option<PieceLetter>;
 
 impl TootAndOtto {
-	/// Initializes an empty Connect 4 board
+	/// Initializes an empty TOOT-n-OTTO board
 	pub fn new() -> Self {
 		TootAndOtto {
 			board: [[None; NUM_COLS]; NUM_ROWS],
