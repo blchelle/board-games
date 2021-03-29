@@ -11,3 +11,12 @@ Cargo.lock
 
 # Ignore the generated documentation
 doc/
+
+# node_modules
+node_modules
+
+# pkg
+pkg
+
+# dist
+dist
