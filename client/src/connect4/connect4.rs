@@ -14,8 +14,8 @@ pub enum PieceColor {
 
 /// A 7x6 Connect 4 Board
 type Board = [[BoardCell; NUM_COLS]; NUM_ROWS];
-const NUM_COLS: usize = 7;
-const NUM_ROWS: usize = 6;
+pub const NUM_COLS: usize = 7;
+pub const NUM_ROWS: usize = 6;
 
 /// All the possible values for a board cell (None, Some(RED), SOME(YELLOW))
 type BoardCell = Option<PieceColor>;
@@ -53,7 +53,7 @@ impl Connect4 {
 	}
 
 	/// Gets the number of chips that have been placed in a column
-	fn get_col_height(&self, col: usize) -> usize {
+	pub fn get_col_height(&self, col: usize) -> usize {
 		for row in 0..NUM_ROWS {
 			match self.board[row][col] {
 				None => {}
@@ -97,9 +97,9 @@ impl Connect4 {
 				// This handles an edge case in the down left update where
 				// col would go from 0 to -1 to indicate it goes out of range
 				//
-				// This would panics, so instead I keep the value as 0 and then
+				// This would panic, so instead I keep the value as 0 and then
 				// check if the value changes.
-				if col != update_coordinates.0 {
+				if col != update_coordinates.0 || row != NUM_ROWS {
 					col = update_coordinates.0;
 					row = update_coordinates.1;
 				} else {

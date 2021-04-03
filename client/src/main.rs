@@ -1,9 +1,17 @@
-mod connect4;
-mod toot_and_otto;
+mod connect4 {
+    pub mod connect4;
+    pub mod easy_cpu;
+}
+mod toot_and_otto {
+    pub mod toot_and_otto;
+}
 
-use connect4::{Connect4, PieceColor};
+use connect4::{
+    connect4::{Connect4, PieceColor},
+    easy_cpu,
+};
 use std::io;
-use toot_and_otto::{PieceLetter, Player, TootAndOtto};
+use toot_and_otto::toot_and_otto::{PieceLetter, Player, TootAndOtto};
 
 /// Gets input from the user and returns a usize and a tuple
 fn get_input_connect4() -> (usize, bool) {
@@ -76,22 +84,22 @@ fn connect4_cli() {
         println!("==========================");
         println!("Enter the column you want to drop your piece in (0-6)");
 
-        let mut column: usize;
-        let mut is_valid = false;
-
-        // Gets input from the user until their input is valid
-        while !is_valid {
-            let result = get_input_connect4();
-            column = result.0;
-            is_valid = result.1;
-
-            if !is_valid {
-                continue;
+        if active_player == PieceColor::RED {
+            let mut column: usize;
+            let mut is_valid = false;
+            // Gets input from the user until their input is valid
+            while !is_valid {
+                let result = get_input_connect4();
+                column = result.0;
+                is_valid = result.1;
+                if !is_valid {
+                    continue;
+                }
+                is_valid = connect4.drop(active_player, column);
             }
-
-            is_valid = connect4.drop(active_player, column);
+        } else {
+            connect4.drop(active_player, easy_cpu::make_move(&connect4));
         }
-
         // Displays the board after the input
         println!("{}", connect4);
     }
