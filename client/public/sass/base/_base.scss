@@ -1,0 +1,34 @@
+:root {
+	--color-primary: #263FBA;
+	--color-primary-light: #344FD5;
+
+	--color-c4-red: #ED2E07;
+	--color-c4-yellow: #F2CB40;
+
+	--color-white: #FAFAFA
+
+}
+
+html {
+	box-sizing: border-box;
+	font-size: 62.5%; // 1rem = 10px
+}
+
+*,
+*::before,
+*::after {
+	font-family: Arial, Helvetica, sans-serif;
+
+	margin: 0;
+	padding: 0;
+	box-sizing: inherit;
+}
+
+.app {
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+
+	width: 100vw;
+	height: 100vh;
+}

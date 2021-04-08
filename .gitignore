@@ -20,3 +20,6 @@ pkg
 
 # dist
 dist
+
+# css output from sass
+css

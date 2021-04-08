@@ -1,0 +1,28 @@
+.navbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	color: var(--color-white);
+
+	padding-left: 4rem;
+	padding-right: 4rem;
+
+	height: 6rem;
+	width: 100%;
+
+	background-color: var(--color-primary);
+
+	&__link {
+		padding: 12px;
+		border-radius: 4px;
+		margin-left: 2rem;
+
+		transition: background 0.1s linear;
+		color: var(--color-white);
+
+		&:hover {
+			background-color: var(--color-primary-light);
+		}
+	}
+}
