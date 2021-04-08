@@ -1,12 +1,12 @@
 [package]
-name = "board_games_client"
+name = "client"
 version = "0.1.0"
-authors = ["Brock Chelle <Brocklchelle@gmail.com>"]
+authors = ["Yew App Developer <name@example.com>"]
 edition = "2018"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-wasm-bindgen = "0.2.63"
-rand = "0.8.3"
+yew = "0.17"
+wasm-bindgen = "0.2.67"

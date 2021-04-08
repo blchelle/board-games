@@ -1,2 +1,2 @@
-import * as wasm from '../pkg/board_games_client';
-wasm.start();
+import init from "./pkg/wasm.js"
+init()

@@ -1,0 +1,48 @@
+.connect4-board {
+	display: flex;
+
+	background-color: var(--color-primary);
+
+	border: 2px solid #111111;
+	border-radius: 10px;
+}
+
+.connect4-column {
+	&:hover {
+
+		background-color: var(--color-primary-light);
+	}
+}
+
+.connect4-cell {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	width: 10rem;
+	height: 10rem;
+}
+
+.piece {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	font-size: 2rem;
+
+	width: 75%;
+	height: 75%;
+	border-radius: 50%;
+
+	&--empty {
+		background-color: var(--color-white);
+	}
+
+	&--red {
+		background-color: var(--color-c4-red);
+	}
+
+	&--yellow {
+		background-color: var(--color-c4-yellow);
+	}
+}

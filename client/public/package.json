@@ -1,17 +1,16 @@
 {
-	"bin": {
-		"create-wasm-app": ".bin/create-wasm-app.js"
-	},
-	"devDependencies": {
-		"html-loader": "^2.1.2",
-		"html-webpack-plugin": "^5.3.1",
-		"webpack": "^5.28.0",
-		"webpack-cli": "^4.6.0",
-		"webpack-dev-server": "^3.11.2",
-		"webpack-merge": "^4.2.2"
-	},
-	"scripts": {
-		"dev": "webpack serve --config webpack/webpack.dev.js --open",
-		"prod": "rm -rf dist/ && webpack --config webpack/webpack.prod.js"
-	}
+		"name": "public",
+		"version": "1.0.0",
+		"main": "index.js",
+		"license": "MIT",
+		"scripts": {
+				"dev": "npm-run-all --parallel run-server watch-sass",
+				"run-server": "live-server --port=8000 --host=localhost",
+				"watch-sass": "node-sass sass/main.scss css/style.css -w"
+		},
+		"devDependencies": {
+				"live-server": "^1.2.1",
+				"node-sass": "^5.0.0",
+				"npm-run-all": "^4.1.5"
+		}
 }

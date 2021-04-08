@@ -1,6 +1,7 @@
 mod connect4 {
     pub mod connect4;
     pub mod easy_cpu;
+    pub mod hard_cpu;
 }
 mod toot_and_otto {
     pub mod toot_and_otto;
@@ -8,7 +9,7 @@ mod toot_and_otto {
 
 use connect4::{
     connect4::{Connect4, PieceColor},
-    easy_cpu,
+    easy_cpu, hard_cpu,
 };
 use std::io;
 use toot_and_otto::toot_and_otto::{PieceLetter, Player, TootAndOtto};
@@ -98,7 +99,7 @@ fn connect4_cli() {
                 is_valid = connect4.drop(active_player, column);
             }
         } else {
-            connect4.drop(active_player, easy_cpu::make_move(&connect4));
+            connect4.drop(active_player, hard_cpu::make_move(connect4.clone()));
         }
         // Displays the board after the input
         println!("{}", connect4);
