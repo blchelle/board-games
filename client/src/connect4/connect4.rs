@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter, Result};
 
 /// A wrapper around the primary `Board` component
 pub struct Connect4 {
-	board: Board,
+	pub board: Board,
 }
 
 /// The two colors that can be placed on a Connect 4 board
@@ -165,8 +165,8 @@ impl Display for Connect4 {
 				match self.board[row][col] {
 					None => print_string.push('-'),
 					Some(color) => match color {
-						PieceColor::RED => print_string.push('R'),
-						PieceColor::YELLOW => print_string.push('Y'),
+						PieceColor::RED => print_string.push('\u{25CF}'),
+						PieceColor::YELLOW => print_string.push('\u{25CB}'),
 					},
 				};
 
@@ -179,6 +179,14 @@ impl Display for Connect4 {
 		print_string.push_str("0 1 2 3 4 5 6");
 
 		write!(f, "\nCurrent Board:\n{}\n", print_string)
+	}
+}
+
+impl Copy for Connect4 {}
+
+impl Clone for Connect4 {
+	fn clone(&self) -> Self {
+		*self
 	}
 }
 
