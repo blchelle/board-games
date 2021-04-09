@@ -85,12 +85,16 @@ impl Component for Connect4Board {
 				}
 
 				self.turn_number += 1;
-				self.active_player = self.active_player.switch();
-
 				match self.board.check_for_win(self.active_player) {
 					false => self.winner = None,
 					true => self.winner = Some(self.active_player),
 				}
+
+				if let Some(_) = self.winner {
+					return true;
+				}
+
+				self.active_player = self.active_player.switch();
 
 				match self.vs {
 					Opponent::Human => return true,
@@ -111,12 +115,11 @@ impl Component for Connect4Board {
 				};
 
 				self.turn_number += 1;
-				self.active_player = self.active_player.switch();
-
 				match self.board.check_for_win(self.active_player) {
 					false => self.winner = None,
 					true => self.winner = Some(self.active_player),
 				}
+				self.active_player = self.active_player.switch();
 			}
 			Msg::Reset => {
 				self.active_player = PieceColor::RED;
