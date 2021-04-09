@@ -1,8 +1,11 @@
 use std::fmt::{Display, Formatter, Result};
 
+use PieceLetter::*;
+use Player::*;
+
 /// A wrapper around the primary `Board` component
 pub struct TootAndOtto {
-	board: Board,
+	pub board: Board,
 }
 
 /// The two pieces that can be placed on a TOOT-n-OTTO board
@@ -14,14 +17,14 @@ pub enum PieceLetter {
 
 #[derive(Copy, Clone)]
 pub enum Player {
-	One,
-	Two,
+	TOOT,
+	OTTO,
 }
 
 /// A 6x4 TOOT-n-OTTO Board
 type Board = [[BoardCell; NUM_COLS]; NUM_ROWS];
-const NUM_COLS: usize = 6;
-const NUM_ROWS: usize = 4;
+pub const NUM_COLS: usize = 6;
+pub const NUM_ROWS: usize = 4;
 
 /// All the possible values for a board cell (None, Some(T), SOME(O))
 type BoardCell = Option<PieceLetter>;
@@ -74,18 +77,8 @@ impl TootAndOtto {
 	// Checks to see if a color has one the game
 	pub fn check_for_win(&self, player: Player) -> bool {
 		let win_pattern = match player {
-			Player::One => [
-				PieceLetter::T,
-				PieceLetter::O,
-				PieceLetter::O,
-				PieceLetter::T,
-			],
-			Player::Two => [
-				PieceLetter::O,
-				PieceLetter::T,
-				PieceLetter::T,
-				PieceLetter::O,
-			],
+			TOOT => [T, O, O, T],
+			OTTO => [O, T, T, O],
 		};
 
 		// Searches for four in a row along some linear traversal
@@ -233,8 +226,8 @@ impl Player {
 	/// Switches the player to the other value
 	pub fn switch(&self) -> Self {
 		match self {
-			Player::One => Player::Two,
-			Player::Two => Player::One,
+			TOOT => OTTO,
+			OTTO => TOOT,
 		}
 	}
 }
@@ -243,8 +236,8 @@ impl Display for Player {
 	/// Prints out the `PieceLetter`
 	fn fmt(&self, f: &mut Formatter) -> Result {
 		match self {
-			Player::One => write!(f, "{}", "Player 1"),
-			Player::Two => write!(f, "{}", "Player 2"),
+			TOOT => write!(f, "{}", "TOOT"),
+			OTTO => write!(f, "{}", "OTTO"),
 		}
 	}
 }

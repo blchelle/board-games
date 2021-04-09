@@ -26,7 +26,8 @@ impl Component for NavBar {
 			<div class="navbar">
 				<h4>{"Board Games"}</h4>
 				<div class="navbar__links">
-					<RouterButton<AppRoute> route=AppRoute::Login> {"LOG IN"} </RouterButton<AppRoute>>
+					<RouterButton<AppRoute> route=AppRoute::Connect4> {"CONNECT 4"} </RouterButton<AppRoute>>
+					<RouterButton<AppRoute> route=AppRoute::TootAndOtto> {"TOOT AND OTTO"} </RouterButton<AppRoute>>
 					<RouterButton<AppRoute> route=AppRoute::Login> {"LOG IN"} </RouterButton<AppRoute>>
 				</div>
 			</div>

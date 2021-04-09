@@ -1,0 +1,93 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	height: 100%;
+}
+
+.board {
+	display: flex;
+	margin-bottom: 2rem;
+}
+
+.column {
+	background-color: var(--color-primary);
+
+	&:hover {
+		background-color: var(--color-primary-light);
+	}
+
+	&:hover .piece--floating {
+		visibility: visible;
+	}
+}
+
+.cell {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	width: 10rem;
+	height: 10rem;
+
+	&--floating {
+		background-color: var(--color-white);
+	}
+}
+
+.piece {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	font-size: 2rem;
+
+	width: 75%;
+	height: 75%;
+	border-radius: 50%;
+
+	&--floating {
+		visibility: hidden;
+		border: 3px solid var(--color-primary);
+		color: var(--color-primary);
+		font-size: 3rem;
+		font-weight: bold;
+
+		transition: color 0.1s linear background 0.1s linear;
+
+		&:hover {
+			background: var(--color-primary);
+			color: var(--color-white);
+		}
+	}
+
+	&--empty {
+		background-color: var(--color-white);
+	}
+
+	&--red {
+		background-color: var(--color-c4-red);
+		color: var(--color-white);
+	}
+
+	&--yellow {
+		background-color: var(--color-c4-yellow);
+	}
+
+	&--toot-n-otto {
+		background-color: var(--color-white);
+		color: var(--color-primary);
+		font-size: 3rem;
+		font-weight: bold;
+	}
+}
+
+.dashboard {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+
+	align-self: stretch;
+}

@@ -85,10 +85,10 @@ impl Component for Connect4Board {
 				}
 
 				self.turn_number += 1;
-				match self.board.check_for_win(self.active_player) {
-					false => self.winner = None,
-					true => self.winner = Some(self.active_player),
-				}
+				self.winner = match self.board.check_for_win(self.active_player) {
+					false => None,
+					true => Some(self.active_player),
+				};
 
 				if let Some(_) = self.winner {
 					return true;
@@ -182,19 +182,19 @@ impl Component for Connect4Board {
 		};
 
 		html! {
-			<div class="connect4-container">
+			<div class="container">
 				<div class="connect4-opponent">
 					{opponent_buttons()}
 				</div>
-				<div class="connect4-board">
+				<div class="board">
 				{
 					(0..NUM_COLS).into_iter().map(|col| {
 						return html! {
-							<div class="connect4-column" onclick=self.link.callback(move |_| Msg::DropPiece(col))>
+							<div class="column" onclick=self.link.callback(move |_| Msg::DropPiece(col))>
 							{
 								(0..NUM_ROWS).into_iter().map(|row| {
 									return html! {
-										<div class="connect4-cell">{check_for_piece(row, col)}</div>
+										<div class="cell">{check_for_piece(row, col)}</div>
 									}
 								}).collect::<Html>()
 							}
@@ -203,7 +203,7 @@ impl Component for Connect4Board {
 					}).collect::<Html>()
 				}
 				</div>
-				<div class="connect4-dashboard">
+				<div class="dashboard">
 					<button onclick=self.link.callback(move |_| Msg::Reset)>{"Reset Game"}</button>
 					{game_status()}
 				</div>

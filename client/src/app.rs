@@ -1,3 +1,4 @@
+use crate::components::toot_and_otto_board::TootAndOttoBoard;
 use crate::components::{connect4_board::Connect4Board, navbar::NavBar};
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -42,11 +43,11 @@ impl Component for App {
 				<Router<AppRoute, ()>
 					render = Router::render(|switch: AppRoute| {
 						match switch {
-							AppRoute::Home => html! {<Connect4Board/>},
+							AppRoute::Home => html! {<TootAndOttoBoard/>},
 							AppRoute::Connect4 => html! {<Connect4Board />},
 							AppRoute::Login => html! {<div>{"Login"}</div>},
 							AppRoute::SignUp => html! {<Connect4Board />},
-							AppRoute::TootAndOtto => html! {<Connect4Board />},
+							AppRoute::TootAndOtto => html! {<TootAndOttoBoard />},
 							_ => html! {<Connect4Board />}
 						}
 					})
