@@ -1,21 +1,19 @@
-use crate::connect4::connect4::{Connect4, PieceColor, NUM_COLS, NUM_ROWS};
-
+use crate::app::AppRoute;
 use yew::prelude::*;
+use yew_router::prelude::RouterButton;
 
-pub struct NavBar {
-	link: ComponentLink<Self>,
-}
+pub struct NavBar {}
 
 pub enum Msg {}
 
 impl Component for NavBar {
 	type Message = Msg;
 	type Properties = ();
-	fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-		Self { link }
+	fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
+		Self {}
 	}
 
-	fn update(&mut self, msg: Self::Message) -> ShouldRender {
+	fn update(&mut self, _: Self::Message) -> ShouldRender {
 		true
 	}
 
@@ -28,8 +26,8 @@ impl Component for NavBar {
 			<div class="navbar">
 				<h4>{"Board Games"}</h4>
 				<div class="navbar__links">
-					<a class="navbar__link" href="#">{"TOOT AND OTTO"}</a>
-					<a class="navbar__link" href="#">{"LOG IN"}</a>
+					<RouterButton<AppRoute> route=AppRoute::Login> {"LOG IN"} </RouterButton<AppRoute>>
+					<RouterButton<AppRoute> route=AppRoute::Login> {"LOG IN"} </RouterButton<AppRoute>>
 				</div>
 			</div>
 		}

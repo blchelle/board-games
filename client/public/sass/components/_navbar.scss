@@ -13,16 +13,11 @@
 
 	background-color: var(--color-primary);
 
-	&__link {
-		padding: 12px;
-		border-radius: 4px;
-		margin-left: 2rem;
+	button {
+		margin-left: 1rem;
+	}
 
-		transition: background 0.1s linear;
-		color: var(--color-white);
-
-		&:hover {
-			background-color: var(--color-primary-light);
-		}
+	&__links {
+		display: flex;
 	}
 }

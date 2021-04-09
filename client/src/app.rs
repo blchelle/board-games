@@ -2,14 +2,18 @@ use crate::components::{connect4_board::Connect4Board, navbar::NavBar};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-#[derive(Switch, Clone)]
-pub enum Routes {
+#[derive(Switch, Clone, PartialEq)]
+pub enum AppRoute {
 	#[to = "/signup"]
 	SignUp,
 	#[to = "/login"]
 	Login,
-	#[to = "/"]
+	#[to = "/connect-4"]
 	Connect4,
+	#[to = "/toot-n-otto"]
+	TootAndOtto,
+	#[to = "/"]
+	Home,
 }
 
 pub struct App {}
@@ -28,19 +32,22 @@ impl Component for App {
 	}
 
 	fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-		false
+		true
 	}
 
 	fn view(&self) -> Html {
 		html! {
 			<div class="app">
 				<NavBar />
-				<Router<Routes, ()>
-					render = Router::render(|switch: Routes| {
+				<Router<AppRoute, ()>
+					render = Router::render(|switch: AppRoute| {
 						match switch {
-							Routes::Connect4 => html! {<Connect4Board />},
-							Routes::Login => html! {<Connect4Board />},
-							Routes::SignUp => html! {<Connect4Board />},
+							AppRoute::Home => html! {<Connect4Board/>},
+							AppRoute::Connect4 => html! {<Connect4Board />},
+							AppRoute::Login => html! {<div>{"Login"}</div>},
+							AppRoute::SignUp => html! {<Connect4Board />},
+							AppRoute::TootAndOtto => html! {<Connect4Board />},
+							_ => html! {<Connect4Board />}
 						}
 					})
 				/>

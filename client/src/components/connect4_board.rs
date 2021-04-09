@@ -136,7 +136,7 @@ impl Component for Connect4Board {
 	}
 
 	fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-		false
+		true
 	}
 
 	fn view(&self) -> Html {
