@@ -9,4 +9,8 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 yew = "0.17"
+yew-router = "0.14.0"
 wasm-bindgen = "0.2.67"
+rand = { version = "0.6.5", features = ["wasm-bindgen"] }
+strum = "0.20.0"
+strum_macros = "0.20"
