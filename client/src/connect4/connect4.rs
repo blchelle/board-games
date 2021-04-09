@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter, Result};
 /// A wrapper around the primary `Board` component
 pub struct Connect4 {
 	pub board: Board,
+	pub moves_played: usize,
 }
 
 /// The two colors that can be placed on a Connect 4 board
@@ -25,6 +26,7 @@ impl Connect4 {
 	pub fn new() -> Self {
 		Connect4 {
 			board: [[None; NUM_COLS]; NUM_ROWS],
+			moves_played: 0,
 		}
 	}
 
@@ -32,7 +34,7 @@ impl Connect4 {
 	pub fn drop(&mut self, color: PieceColor, col: usize) -> bool {
 		// Checks for some simple input errors
 		if col >= NUM_COLS {
-			println!("Invalid Drop Column, Try Again.");
+			// println!("Invalid Drop Column, Try Again.");
 			return false;
 		}
 
@@ -40,7 +42,7 @@ impl Connect4 {
 		let col_height = self.get_col_height(col);
 
 		if col_height == NUM_ROWS {
-			println!("Column {} is full, Try Again.", col);
+			// println!("Column {} is full, Try Again.", col);
 			return false;
 		}
 
@@ -49,6 +51,7 @@ impl Connect4 {
 
 		// Inserts the piece into the board
 		self.board[row][col] = Some(color);
+		self.moves_played += 1;
 		true
 	}
 

@@ -6,6 +6,9 @@ mod components {
 }
 mod connect4 {
     pub mod connect4;
+    pub mod easy_cpu;
+    pub mod hard_cpu;
+    pub mod medium_cpu;
 }
 
 use wasm_bindgen::prelude::*;

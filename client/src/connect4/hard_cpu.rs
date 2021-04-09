@@ -1,45 +1,40 @@
-use crate::connect4::{
-	connect4::{Connect4, PieceColor, NUM_COLS},
-	easy_cpu,
-};
-use rand::seq::SliceRandom;
+use crate::connect4::connect4::{Connect4, PieceColor, NUM_COLS, NUM_ROWS};
 
-/// The hard cpu is not perfect but follows a set of logic
 pub fn make_move(board: Connect4) -> usize {
-	// The first priority is to check for a winning move
-	if let Some(col) = check_for_winning_move(PieceColor::YELLOW, board) {
-		return col;
+	return negamax(board, PieceColor::YELLOW).1;
+}
+
+pub fn negamax(board: Connect4, active_player: PieceColor) -> (i32, usize) {
+	if board.moves_played == NUM_COLS * NUM_ROWS {
+		return (0, 0);
 	}
 
-	// The second priority is to stop any winning moves from the opponent
-	if let Some(col) = check_for_winning_move(PieceColor::RED, board) {
-		return col;
+	if let Some(col) = check_for_winning_move(active_player, board.clone()) {
+		return (
+			((NUM_COLS * NUM_ROWS) + 1 - (board.moves_played / 2)) as i32,
+			col,
+		);
 	}
 
-	// The third priority is to actively avoid any move that will set the
-	// opponent up on the subsequent turn
-	let mut eligible_columns = check_for_eligible_columns(board);
-	let bad_columns = check_for_setup_moves(board);
+	let mut best_score = -1 * ((NUM_COLS * NUM_ROWS) as i32);
+	let mut best_column = 0;
 
-	eligible_columns.sort_by(|a, b| {
-		// Set the priority based on distance from the middle
-		let mut true_a = (3 - (*a as i32)).abs();
-		let mut true_b = (3 - (*b as i32)).abs();
-
-		// If either is in bad_columns, give it a value of inf
-		if bad_columns.contains(a) {
-			true_a = i32::MAX;
+	for col in 0..NUM_COLS {
+		if board.get_col_height(col) == NUM_ROWS {
+			continue;
 		}
 
-		if bad_columns.contains(b) {
-			true_b = i32::MAX;
+		let mut next_board = board.clone();
+		next_board.drop(active_player, col);
+
+		let (score, _) = negamax(next_board, active_player.switch());
+		if score > best_score {
+			best_score = score;
+			best_column = col
 		}
+	}
 
-		true_a.cmp(&true_b)
-	});
-	println!("{:?}", eligible_columns);
-
-	eligible_columns[0]
+	(best_score, best_column)
 }
 
 /// Checks if there is a move that will lead to a win
@@ -49,44 +44,9 @@ fn check_for_winning_move(color: PieceColor, board: Connect4) -> Option<usize> {
 		temp_board.drop(color, i);
 
 		if temp_board.check_for_win(color) {
-			println!("Found win for {} on column {}", color, i);
 			return Some(i);
 		}
 	}
 
 	None
-}
-
-/// Creates a list of moves that would set the opponent up to win
-/// These moves should not be pursued unless they are the only options
-fn check_for_setup_moves(board: Connect4) -> Vec<usize> {
-	let mut bad_moves = vec![];
-
-	for i in 0..NUM_COLS {
-		let mut temp_board = board.clone();
-
-		// Simulates the next two moves if both players play in the same column
-		temp_board.drop(PieceColor::YELLOW, i);
-		temp_board.drop(PieceColor::RED, i);
-
-		if temp_board.check_for_win(PieceColor::RED) {
-			println!("Found setup for {} on column {}", PieceColor::RED, i);
-			bad_moves.push(i);
-		}
-	}
-
-	bad_moves
-}
-
-fn check_for_eligible_columns(board: Connect4) -> Vec<usize> {
-	let mut eligible_columns = vec![];
-
-	// Finds which columns in the board are available
-	for i in 0..NUM_COLS {
-		if board.get_col_height(i) < 6 {
-			eligible_columns.push(i);
-		}
-	}
-
-	eligible_columns
 }

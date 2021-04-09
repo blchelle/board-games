@@ -1,33 +1,33 @@
 use crate::components::{connect4_board::Connect4Board, navbar::NavBar};
 use yew::prelude::*;
+use yew_router::prelude::*;
 
-pub struct App {
-	link: ComponentLink<Self>,
-	value: i64,
+#[derive(Switch, Clone)]
+pub enum Routes {
+	#[to = "/signup"]
+	SignUp,
+	#[to = "/login"]
+	Login,
+	#[to = "/"]
+	Connect4,
 }
 
-pub enum Msg {
-	AddOne,
-}
+pub struct App {}
+
+pub enum Msg {}
 
 impl Component for App {
 	type Message = Msg;
 	type Properties = ();
-	fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-		Self { link, value: 0 }
+	fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
+		Self {}
 	}
 
-	fn update(&mut self, msg: Self::Message) -> ShouldRender {
-		match msg {
-			Msg::AddOne => self.value += 1,
-		}
+	fn update(&mut self, _: Self::Message) -> ShouldRender {
 		true
 	}
 
 	fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-		// Should only return "true" if new properties are different to
-		// previously received properties.
-		// This component has no properties so we will always return "false".
 		false
 	}
 
@@ -35,7 +35,15 @@ impl Component for App {
 		html! {
 			<div class="app">
 				<NavBar />
-				<Connect4Board />
+				<Router<Routes, ()>
+					render = Router::render(|switch: Routes| {
+						match switch {
+							Routes::Connect4 => html! {<Connect4Board />},
+							Routes::Login => html! {<Connect4Board />},
+							Routes::SignUp => html! {<Connect4Board />},
+						}
+					})
+				/>
 			</div>
 		}
 	}
