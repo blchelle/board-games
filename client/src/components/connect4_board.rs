@@ -183,9 +183,6 @@ impl Component for Connect4Board {
 
 		html! {
 			<div class="container">
-				<div class="connect4-opponent">
-					{opponent_buttons()}
-				</div>
 				<div class="board">
 				{
 					(0..NUM_COLS).into_iter().map(|col| {
@@ -203,11 +200,13 @@ impl Component for Connect4Board {
 					}).collect::<Html>()
 				}
 				</div>
+				<div class="connect4-opponent">
+					{opponent_buttons()}
+				</div>
 				<div class="dashboard">
 					<button onclick=self.link.callback(move |_| Msg::Reset)>{"Reset Game"}</button>
 					{game_status()}
 				</div>
-
 			</div>
 		}
 	}

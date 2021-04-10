@@ -1,21 +1,10 @@
-use crate::components::toot_and_otto_board::TootAndOttoBoard;
-use crate::components::{connect4_board::Connect4Board, navbar::NavBar};
+use crate::{
+	components::{
+		connect4_board::Connect4Board, navbar::NavBar, toot_and_otto_board::TootAndOttoBoard,
+	},
+	switch::{AppRoute, AppRouter, PublicUrlSwitch},
+};
 use yew::prelude::*;
-use yew_router::prelude::*;
-
-#[derive(Switch, Clone, PartialEq)]
-pub enum AppRoute {
-	#[to = "/signup"]
-	SignUp,
-	#[to = "/login"]
-	Login,
-	#[to = "/connect-4"]
-	Connect4,
-	#[to = "/toot-n-otto"]
-	TootAndOtto,
-	#[to = "/"]
-	Home,
-}
 
 pub struct App {}
 
@@ -24,6 +13,7 @@ pub enum Msg {}
 impl Component for App {
 	type Message = Msg;
 	type Properties = ();
+
 	fn create(_: Self::Properties, _: ComponentLink<Self>) -> Self {
 		Self {}
 	}
@@ -33,25 +23,22 @@ impl Component for App {
 	}
 
 	fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-		true
+		false
 	}
 
 	fn view(&self) -> Html {
+		let get_route = AppRouter::render(|switch: PublicUrlSwitch| match switch.route() {
+			AppRoute::Connect4 => html! {<Connect4Board />},
+			AppRoute::Login => html! {<div>{"Login"}</div>},
+			AppRoute::SignUp => html! {<Connect4Board />},
+			AppRoute::TootAndOtto => html! {<TootAndOttoBoard />},
+			AppRoute::Home => html! {<TootAndOttoBoard/>},
+		});
+
 		html! {
 			<div class="app">
 				<NavBar />
-				<Router<AppRoute, ()>
-					render = Router::render(|switch: AppRoute| {
-						match switch {
-							AppRoute::Home => html! {<TootAndOttoBoard/>},
-							AppRoute::Connect4 => html! {<Connect4Board />},
-							AppRoute::Login => html! {<div>{"Login"}</div>},
-							AppRoute::SignUp => html! {<Connect4Board />},
-							AppRoute::TootAndOtto => html! {<TootAndOttoBoard />},
-							_ => html! {<Connect4Board />}
-						}
-					})
-				/>
+				<AppRouter render=get_route />
 			</div>
 		}
 	}
