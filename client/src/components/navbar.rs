@@ -1,6 +1,5 @@
-use crate::app::AppRoute;
+use crate::switch::{AppRoute, RouterButton};
 use yew::prelude::*;
-use yew_router::prelude::RouterButton;
 
 pub struct NavBar {}
 
@@ -26,9 +25,9 @@ impl Component for NavBar {
 			<div class="navbar">
 				<h4>{"Board Games"}</h4>
 				<div class="navbar__links">
-					<RouterButton<AppRoute> route=AppRoute::Connect4> {"CONNECT 4"} </RouterButton<AppRoute>>
-					<RouterButton<AppRoute> route=AppRoute::TootAndOtto> {"TOOT AND OTTO"} </RouterButton<AppRoute>>
-					<RouterButton<AppRoute> route=AppRoute::Login> {"LOG IN"} </RouterButton<AppRoute>>
+					<RouterButton route=AppRoute::Connect4> {"CONNECT 4"} </RouterButton>
+					<RouterButton route=AppRoute::TootAndOtto> {"TOOT AND OTTO"} </RouterButton>
+					<RouterButton route=AppRoute::Login> {"LOG IN"} </RouterButton>
 				</div>
 			</div>
 		}

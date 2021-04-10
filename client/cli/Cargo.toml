@@ -1,0 +1,8 @@
+[package]
+name = "cli"
+version = "0.1.0"
+authors = ["Brock Chelle <bchelle@ualberta.ca>"]
+edition = "2018"
+
+[dependencies]
+client = { path="../client"}

@@ -1,32 +1,20 @@
 # Board Games
-A full-stack rust implementation of Connect-4 and TOOT-and-OTTO
+A full-stack rust implementation of Connect-4 and TOOT-and-OTTO.
 
 ### Client Side Installation
-1. Navigate to the `client/` directory
+1. Navigate to the `client/` directory.
 ```sh
 cd client/
 ```
 
-2. Compile the Rust project to Web Assembly
-```sh
-wasm-pack build --target web --out-name wasm --out-dir ./public/pkg
+2. Install `Trunk`, a WASM web application bundler for `Rust`. This may take a couple minutes.
+```
+cargo install trunk wasm-bindgen-cli
 ```
 
-3. Navigate to the `client/public/` directory
+3. Run the application. This should automatically spawn a web browser. If this is not the case, open up a browser and navigate to `localhost:<PORT>` or `127.0.0.1:<PORT>`.
 ```sh
-cd public/ # assuming you're in client
+trunk serve # port 8080
+# or specify the port number
+trunk serve --port 3000
 ```
-
-4. Install the required npm dependencies
-```sh
-npm install
-```
-
-5. Start the development server
-```sh
-npm run dev
-```
-
-**Notes for Developers**
-1. When modifying the `Rust` code, you will have to run `Step 2.` everytime a change is made
-2. When modifying hte `SASS` stylesheets, you shouldn't have to restart the server, unless it crashes of course
