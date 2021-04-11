@@ -1,46 +1,14 @@
-use crate::connect4::connect4::{Connect4, PieceColor, NUM_COLS, NUM_ROWS};
-use crate::connect4::easy_cpu;
-use crate::connect4::hard_cpu;
-use crate::connect4::medium_cpu;
+use crate::{
+	connect4::{
+		connect4::{Connect4, NUM_COLS, NUM_ROWS},
+		easy_cpu, hard_cpu, medium_cpu,
+		piece_color::{PieceColor, PieceColor::*},
+	},
+	types::opponent::Opponent,
+};
 
-use std::fmt::{Display, Formatter, Result};
 use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
 use yew::prelude::*;
-
-#[derive(EnumIter, Copy, Clone)]
-enum Opponent {
-	Human,
-	EasyCPU,
-	MediumCPU,
-	HardCPU,
-}
-
-impl Display for Opponent {
-	/// Prints out the piece color
-	fn fmt(&self, f: &mut Formatter) -> Result {
-		match self {
-			Opponent::Human => write!(f, "{}", "Human"),
-			Opponent::EasyCPU => write!(f, "{}", "Easy CPU"),
-			Opponent::MediumCPU => write!(f, "{}", "Medium CPU"),
-			Opponent::HardCPU => write!(f, "{}", "Hard CPU"),
-		}
-	}
-}
-
-impl PartialEq for Opponent {
-	fn eq(&self, other: &Opponent) -> bool {
-		use Opponent::*;
-
-		match (self, other) {
-			(Human, Human) => true,
-			(EasyCPU, EasyCPU) => true,
-			(MediumCPU, MediumCPU) => true,
-			(HardCPU, HardCPU) => true,
-			_ => false,
-		}
-	}
-}
 
 pub struct Connect4Board {
 	board: Connect4,
@@ -63,7 +31,7 @@ impl Component for Connect4Board {
 	fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
 		Self {
 			link,
-			active_player: PieceColor::RED,
+			active_player: RED,
 			board: Connect4::new(),
 			turn_number: 1,
 			vs: Opponent::Human,
@@ -122,7 +90,7 @@ impl Component for Connect4Board {
 				self.active_player = self.active_player.switch();
 			}
 			Msg::Reset => {
-				self.active_player = PieceColor::RED;
+				self.active_player = RED;
 				self.board = Connect4::new();
 				self.turn_number = 1;
 				self.winner = None;
@@ -144,8 +112,8 @@ impl Component for Connect4Board {
 			match self.board.board[row][col] {
 				None => html! {<div class="piece piece--empty"></div>},
 				Some(color) => match color {
-					PieceColor::RED => html! {<div class="piece piece--red">{"R"}</div>},
-					PieceColor::YELLOW => html! {<div class="piece piece--yellow">{"Y"}</div>},
+					RED => html! {<div class="piece piece--red">{"R"}</div>},
+					YELLOW => html! {<div class="piece piece--yellow">{"Y"}</div>},
 				},
 			}
 		};
@@ -160,8 +128,8 @@ impl Component for Connect4Board {
 					html! {<p>{format!("Turn {}, {}'s Move", self.turn_number, self.active_player)}</p>}
 				}
 				Some(winner) => match winner {
-					PieceColor::RED => html! {<p>{"Player 1 Wins!"}</p>},
-					PieceColor::YELLOW => html! {<p>{"Player 2 Wins!"}</p>},
+					RED => html! {<p>{"Player 1 Wins!"}</p>},
+					YELLOW => html! {<p>{"Player 2 Wins!"}</p>},
 				},
 			}
 		};
@@ -171,7 +139,7 @@ impl Component for Connect4Board {
 				Opponent::iter().map(|opponent| {
 					html! {
 						<button
-							class=format!("connect4-opponent__button {}", if self.vs == opponent {"connect4-opponent__button--selected"} else {""})
+							class=format!("opponent__button {}", if self.vs == opponent {"opponent__button--selected"} else {""})
 							onclick=self.link.callback(move |_| Msg::ChangeOpponent(opponent))
 						>
 							{opponent}
@@ -200,7 +168,7 @@ impl Component for Connect4Board {
 					}).collect::<Html>()
 				}
 				</div>
-				<div class="connect4-opponent">
+				<div class="opponent">
 					{opponent_buttons()}
 				</div>
 				<div class="dashboard">

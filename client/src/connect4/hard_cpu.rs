@@ -1,7 +1,10 @@
-use crate::connect4::connect4::{Connect4, PieceColor, NUM_COLS, NUM_ROWS};
+use super::{
+	connect4::{Connect4, NUM_COLS, NUM_ROWS},
+	piece_color::{PieceColor, PieceColor::*},
+};
 
 pub fn make_move(board: Connect4) -> usize {
-	return negamax(board, PieceColor::YELLOW).1;
+	return negamax(board, YELLOW).1;
 }
 
 pub fn negamax(board: Connect4, active_player: PieceColor) -> (i32, usize) {
