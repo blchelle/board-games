@@ -23,11 +23,10 @@ impl Component for NavBar {
 	fn view(&self) -> Html {
 		html! {
 			<div class="navbar">
-				<h4>{"Board Games"}</h4>
 				<div class="navbar__links">
-					<RouterButton route=AppRoute::Connect4> {"CONNECT 4"} </RouterButton>
-					<RouterButton route=AppRoute::TootAndOtto> {"TOOT AND OTTO"} </RouterButton>
-					<RouterButton route=AppRoute::Login> {"LOG IN"} </RouterButton>
+					<RouterButton route=AppRoute::Connect4> {"CONNECT4"} </RouterButton>
+					<RouterButton route=AppRoute::TootAndOtto> {"TOOT 'N OTTO"} </RouterButton>
+					<RouterButton route=AppRoute::Login> {"LOGIN"} </RouterButton>
 				</div>
 			</div>
 		}

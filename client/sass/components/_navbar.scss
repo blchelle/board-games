@@ -1,6 +1,6 @@
 .navbar {
 	display: flex;
-	justify-content: space-between;
+	justify-content: flex-end;
 	align-items: center;
 
 	color: var(--color-white);
@@ -19,5 +19,14 @@
 
 	&__links {
 		display: flex;
+	}
+}
+
+// Start of Medium Tablet
+@media screen and (max-width: $bp-m) {
+	.navbar {
+		justify-content: center;
+		padding-left: 1rem;
+		padding-right: 1rem;
 	}
 }
