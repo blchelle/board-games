@@ -1,16 +1,10 @@
+use super::piece_color::{PieceColor, PieceColor::*};
 use std::fmt::{Display, Formatter, Result};
 
 /// A wrapper around the primary `Board` component
 pub struct Connect4 {
 	pub board: Board,
 	pub moves_played: usize,
-}
-
-/// The two colors that can be placed on a Connect 4 board
-#[derive(Copy, Clone)]
-pub enum PieceColor {
-	RED,
-	YELLOW,
 }
 
 /// A 7x6 Connect 4 Board
@@ -168,8 +162,8 @@ impl Display for Connect4 {
 				match self.board[row][col] {
 					None => print_string.push('-'),
 					Some(color) => match color {
-						PieceColor::RED => print_string.push('\u{25CF}'),
-						PieceColor::YELLOW => print_string.push('\u{25CB}'),
+						RED => print_string.push('\u{25CF}'),
+						YELLOW => print_string.push('\u{25CB}'),
 					},
 				};
 
@@ -190,41 +184,5 @@ impl Copy for Connect4 {}
 impl Clone for Connect4 {
 	fn clone(&self) -> Self {
 		*self
-	}
-}
-
-impl PartialEq for PieceColor {
-	/// Equivalence Checker for the PieceColors
-	fn eq(&self, other: &PieceColor) -> bool {
-		match self {
-			PieceColor::RED => match other {
-				PieceColor::RED => true,
-				PieceColor::YELLOW => false,
-			},
-			PieceColor::YELLOW => match other {
-				PieceColor::RED => false,
-				PieceColor::YELLOW => true,
-			},
-		}
-	}
-}
-
-impl Display for PieceColor {
-	/// Prints out the piece color
-	fn fmt(&self, f: &mut Formatter) -> Result {
-		match self {
-			PieceColor::RED => write!(f, "{}", "Red"),
-			PieceColor::YELLOW => write!(f, "{}", "Yellow"),
-		}
-	}
-}
-
-impl PieceColor {
-	/// Flips the value of the piece
-	pub fn switch(&self) -> Self {
-		match self {
-			PieceColor::RED => PieceColor::YELLOW,
-			PieceColor::YELLOW => PieceColor::RED,
-		}
 	}
 }

@@ -1,17 +1,17 @@
-use crate::connect4::{
-	connect4::{Connect4, PieceColor, NUM_COLS},
-	easy_cpu,
+use super::{
+	connect4::{Connect4, NUM_COLS, NUM_ROWS},
+	piece_color::{PieceColor, PieceColor::*},
 };
 
 /// The hard cpu is not perfect but follows a set of logic
 pub fn make_move(board: Connect4) -> usize {
 	// The first priority is to check for a winning move
-	if let Some(col) = check_for_winning_move(PieceColor::YELLOW, board) {
+	if let Some(col) = check_for_winning_move(YELLOW, board) {
 		return col;
 	}
 
 	// The second priority is to stop any winning moves from the opponent
-	if let Some(col) = check_for_winning_move(PieceColor::RED, board) {
+	if let Some(col) = check_for_winning_move(RED, board) {
 		return col;
 	}
 
@@ -66,11 +66,11 @@ fn check_for_setup_moves(board: Connect4) -> Vec<usize> {
 		let mut temp_board = board.clone();
 
 		// Simulates the next two moves if both players play in the same column
-		temp_board.drop(PieceColor::YELLOW, i);
-		temp_board.drop(PieceColor::RED, i);
+		temp_board.drop(YELLOW, i);
+		temp_board.drop(RED, i);
 
-		if temp_board.check_for_win(PieceColor::RED) {
-			// println!("Found setup for {} on column {}", PieceColor::RED, i);
+		if temp_board.check_for_win(RED) {
+			// println!("Found setup for {} on column {}", RED, i);
 			bad_moves.push(i);
 		}
 	}

@@ -7,7 +7,8 @@ edition = "2018"
 [dependencies]
 yew = "0.17"
 yew-router = "0.14.0"
-wasm-logger = "0.2"
+log = "0.4.6"
+wasm-logger = "0.2.0"
 rand = { version = "0.6.5", features = ["wasm-bindgen"] }
 strum = "0.20.0"
 strum_macros = "0.20"

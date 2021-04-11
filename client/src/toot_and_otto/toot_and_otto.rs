@@ -1,24 +1,13 @@
 use std::fmt::{Display, Formatter, Result};
 
-use PieceLetter::*;
-use Player::*;
+use super::{
+	piece_letter::{PieceLetter, PieceLetter::*},
+	player::{Player, Player::*},
+};
 
 /// A wrapper around the primary `Board` component
 pub struct TootAndOtto {
 	pub board: Board,
-}
-
-/// The two pieces that can be placed on a TOOT-n-OTTO board
-#[derive(Copy, Clone)]
-pub enum PieceLetter {
-	T,
-	O,
-}
-
-#[derive(Copy, Clone)]
-pub enum Player {
-	TOOT,
-	OTTO,
 }
 
 /// A 6x4 TOOT-n-OTTO Board
@@ -193,51 +182,5 @@ impl Display for TootAndOtto {
 		print_string.push_str("0 1 2 3 4 5");
 
 		write!(f, "\nCurrent Board:\n{}\n", print_string)
-	}
-}
-
-impl PartialEq for PieceLetter {
-	/// Equivalence Checker for the `PieceLetters`
-	fn eq(&self, other: &PieceLetter) -> bool {
-		match self {
-			PieceLetter::T => match other {
-				PieceLetter::T => true,
-				PieceLetter::O => false,
-			},
-			PieceLetter::O => match other {
-				PieceLetter::T => false,
-				PieceLetter::O => true,
-			},
-		}
-	}
-}
-
-impl Display for PieceLetter {
-	/// Prints out the `PieceLetter`
-	fn fmt(&self, f: &mut Formatter) -> Result {
-		match self {
-			PieceLetter::O => write!(f, "{}", "O"),
-			PieceLetter::T => write!(f, "{}", "T"),
-		}
-	}
-}
-
-impl Player {
-	/// Switches the player to the other value
-	pub fn switch(&self) -> Self {
-		match self {
-			TOOT => OTTO,
-			OTTO => TOOT,
-		}
-	}
-}
-
-impl Display for Player {
-	/// Prints out the `PieceLetter`
-	fn fmt(&self, f: &mut Formatter) -> Result {
-		match self {
-			TOOT => write!(f, "{}", "TOOT"),
-			OTTO => write!(f, "{}", "OTTO"),
-		}
 	}
 }
