@@ -11,9 +11,7 @@ mod components {
 
 mod connect4 {
     pub mod connect4;
-    pub mod easy_cpu;
-    pub mod hard_cpu;
-    pub mod medium_cpu;
+    pub mod cpu;
     pub mod piece_color;
 }
 

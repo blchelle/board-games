@@ -1,7 +1,7 @@
 use crate::{
 	connect4::{
 		connect4::{Connect4, NUM_COLS, NUM_ROWS},
-		easy_cpu, hard_cpu, medium_cpu,
+		cpu,
 		piece_color::{PieceColor, PieceColor::*},
 	},
 	types::opponent::Opponent,
@@ -13,8 +13,6 @@ use yew::prelude::*;
 pub struct Connect4Board {
 	board: Connect4,
 	active_player: PieceColor,
-	winner: Option<PieceColor>,
-	turn_number: u32,
 	vs: Opponent,
 	link: ComponentLink<Self>,
 }
@@ -33,18 +31,16 @@ impl Component for Connect4Board {
 			link,
 			active_player: RED,
 			board: Connect4::new(),
-			turn_number: 1,
-			vs: Opponent::Human,
-			winner: None,
+			vs: Opponent::HardCPU,
 		}
 	}
 
 	fn update(&mut self, msg: Self::Message) -> ShouldRender {
 		match msg {
 			Msg::DropPiece(col) => {
-				if let Some(_) = self.winner {
+				if let Some(_) = self.board.winner {
 					return false;
-				} else if self.turn_number > 42 {
+				} else if self.board.moves_played == 42 {
 					return false;
 				}
 
@@ -52,13 +48,7 @@ impl Component for Connect4Board {
 					return false;
 				}
 
-				self.turn_number += 1;
-				self.winner = match self.board.check_for_win(self.active_player) {
-					false => None,
-					true => Some(self.active_player),
-				};
-
-				if let Some(_) = self.winner {
+				if let Some(_) = self.board.winner {
 					return true;
 				}
 
@@ -68,35 +58,28 @@ impl Component for Connect4Board {
 					Opponent::Human => return true,
 					Opponent::EasyCPU => {
 						self.board
-							.drop(self.active_player, easy_cpu::make_move(&self.board));
+							.drop(self.active_player, cpu::make_move(self.board, 1));
 					}
 					Opponent::MediumCPU => {
-						self.board.drop(
-							self.active_player,
-							medium_cpu::make_move(self.board.clone()),
-						);
+						self.board
+							.drop(self.active_player, cpu::make_move(self.board, 5));
 					}
 					Opponent::HardCPU => {
 						self.board
-							.drop(self.active_player, hard_cpu::make_move(self.board.clone()));
+							.drop(self.active_player, cpu::make_move(self.board, 15));
 					}
 				};
 
-				self.turn_number += 1;
-				match self.board.check_for_win(self.active_player) {
-					false => self.winner = None,
-					true => self.winner = Some(self.active_player),
-				}
 				self.active_player = self.active_player.switch();
 			}
 			Msg::Reset => {
 				self.active_player = RED;
 				self.board = Connect4::new();
-				self.turn_number = 1;
-				self.winner = None;
 			}
 			Msg::ChangeOpponent(opponent) => {
-				self.vs = opponent;
+				if self.board.moves_played == 0 {
+					self.vs = opponent;
+				}
 			}
 		};
 
@@ -119,13 +102,13 @@ impl Component for Connect4Board {
 		};
 
 		let game_status = move || -> Html {
-			if self.turn_number == 43 {
+			if self.board.moves_played >= 42 {
 				return html! {<p>{"It's a draw!"}</p>};
 			}
 
-			match self.winner {
+			match self.board.winner {
 				None => {
-					html! {<p>{format!("Turn {}, {}'s Move", self.turn_number, self.active_player)}</p>}
+					html! {<p>{format!("Turn {}, {}'s Move", self.board.moves_played, self.active_player)}</p>}
 				}
 				Some(winner) => match winner {
 					RED => html! {<p>{"Player 1 Wins!"}</p>},

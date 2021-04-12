@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter, Result};
 
 /// The two colors that can be placed on a Connect 4 board
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PieceColor {
 	RED,
 	YELLOW,
