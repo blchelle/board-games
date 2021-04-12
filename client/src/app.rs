@@ -1,6 +1,7 @@
 use crate::{
 	components::{
-		connect4_board::Connect4Board, navbar::NavBar, toot_and_otto_board::TootAndOttoBoard,
+		connect4_board::Connect4Board, login::LoginPage, navbar::NavBar,
+		toot_and_otto_board::TootAndOttoBoard,
 	},
 	switch::{AppRoute, AppRouter, PublicUrlSwitch},
 };
@@ -29,7 +30,7 @@ impl Component for App {
 	fn view(&self) -> Html {
 		let get_route = AppRouter::render(|switch: PublicUrlSwitch| match switch.route() {
 			AppRoute::Connect4 => html! {<Connect4Board />},
-			AppRoute::Login => html! {<div>{"Login"}</div>},
+			AppRoute::Login => html! {<LoginPage/>},
 			AppRoute::SignUp => html! {<Connect4Board />},
 			AppRoute::TootAndOtto => html! {<TootAndOttoBoard />},
 			AppRoute::Home => html! {<TootAndOttoBoard/>},
