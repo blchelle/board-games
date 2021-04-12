@@ -8,7 +8,7 @@ pub struct Connect4 {
 	pub moves_played: usize,
 	pub is_terminal: bool,
 	pub winner: Option<PieceColor>,
-	pub column_heights: [usize; 7],
+	pub column_heights: [usize; NUM_COLS],
 }
 
 /// A 7x6 Connect 4 Board
@@ -27,7 +27,7 @@ impl Connect4 {
 			moves_played: 0,
 			is_terminal: false,
 			winner: None,
-			column_heights: [0, 0, 0, 0, 0, 0, 0],
+			column_heights: [0; NUM_COLS],
 		}
 	}
 

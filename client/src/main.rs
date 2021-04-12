@@ -17,6 +17,7 @@ mod connect4 {
 }
 
 mod toot_and_otto {
+    pub mod cpu;
     pub mod piece_letter;
     pub mod player;
     pub mod toot_and_otto;
