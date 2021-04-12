@@ -2,9 +2,13 @@ use super::piece_color::{PieceColor, PieceColor::*};
 use std::fmt::{Display, Formatter, Result};
 
 /// A wrapper around the primary `Board` component
+#[derive(Copy, Clone)]
 pub struct Connect4 {
 	pub board: Board,
 	pub moves_played: usize,
+	pub is_terminal: bool,
+	pub winner: Option<PieceColor>,
+	pub column_heights: [usize; 7],
 }
 
 /// A 7x6 Connect 4 Board
@@ -21,6 +25,9 @@ impl Connect4 {
 		Connect4 {
 			board: [[None; NUM_COLS]; NUM_ROWS],
 			moves_played: 0,
+			is_terminal: false,
+			winner: None,
+			column_heights: [0, 0, 0, 0, 0, 0, 0],
 		}
 	}
 
@@ -28,15 +35,14 @@ impl Connect4 {
 	pub fn drop(&mut self, color: PieceColor, col: usize) -> bool {
 		// Checks for some simple input errors
 		if col >= NUM_COLS {
-			// println!("Invalid Drop Column, Try Again.");
 			return false;
 		}
 
 		// Gets the number of pieces in the column and checks if it is full
-		let col_height = self.get_col_height(col);
+		let col_height = self.column_heights[col];
 
+		// Checks if the column can be dropped into
 		if col_height == NUM_ROWS {
-			// println!("Column {} is full, Try Again.", col);
 			return false;
 		}
 
@@ -46,105 +52,229 @@ impl Connect4 {
 		// Inserts the piece into the board
 		self.board[row][col] = Some(color);
 		self.moves_played += 1;
+		self.winner = match self.check_for_win(color) {
+			true => Some(color),
+			false => None,
+		};
+		self.is_terminal = self.winner != None || self.moves_played == NUM_COLS * NUM_ROWS;
+		self.column_heights[col] += 1;
+
 		true
-	}
-
-	/// Gets the number of chips that have been placed in a column
-	pub fn get_col_height(&self, col: usize) -> usize {
-		for row in 0..NUM_ROWS {
-			match self.board[row][col] {
-				None => {}
-				_ => return NUM_ROWS - row,
-			}
-		}
-
-		// No chips have been placed in the column
-		0
 	}
 
 	/// Checks to see if a color has one the game
 	pub fn check_for_win(&self, color: PieceColor) -> bool {
-		// Searches for four in a row along some linear traversal
-		let check_line = |start_y: usize,
-		                  start_x: usize,
-		                  update: Box<dyn Fn(usize, usize) -> (usize, usize)>|
-		 -> bool {
-			let mut col = start_x;
-			let mut row = start_y;
-
-			let mut consecutive_count = 0;
-			while row < NUM_ROWS && col < NUM_COLS {
-				match self.board[row][col] {
-					None => consecutive_count = 0,
-					Some(cell_color) => {
-						if color == cell_color {
-							consecutive_count += 1;
-						} else {
-							consecutive_count = 0;
+		let check_for_win_in_window = |window: &[BoardCell]| -> bool {
+			for cell in window.iter() {
+				match cell {
+					None => return false,
+					Some(c) => {
+						if *c != color {
+							return false;
 						}
 					}
 				}
-
-				if consecutive_count == 4 {
-					return true;
-				}
-
-				let update_coordinates = update(col, row);
-
-				// This handles an edge case in the down left update where
-				// col would go from 0 to -1 to indicate it goes out of range
-				//
-				// This would panic, so instead I keep the value as 0 and then
-				// check if the value changes.
-				if col != update_coordinates.0 || row != NUM_ROWS {
-					col = update_coordinates.0;
-					row = update_coordinates.1;
-				} else {
-					return false;
-				}
 			}
 
-			false
+			true
 		};
-
-		// Update closure functions for the four traversals
-		let row_update = |x: usize, y: usize| -> (usize, usize) { (x + 1, y) };
-		let col_update = |x: usize, y: usize| -> (usize, usize) { (x, y + 1) };
-		let dr_update = |x: usize, y: usize| -> (usize, usize) { (x + 1, y + 1) };
-		let dl_update =
-			|x: usize, y: usize| -> (usize, usize) { (if x == 0 { 0 } else { x - 1 }, y + 1) };
 
 		// Checks all the rows
 		for row in 0..NUM_ROWS {
-			if check_line(row, 0, Box::new(row_update)) {
-				return true;
+			for start_col in 0..NUM_COLS - 3 {
+				let window = &self.board[row][start_col..start_col + 4];
+				if check_for_win_in_window(window) {
+					return true;
+				}
 			}
 		}
 
-		// Checks all the columns
+		// Performs a check across all columns
 		for col in 0..NUM_COLS {
-			if check_line(0, col, Box::new(col_update)) {
-				return true;
+			for start_row in 0..NUM_ROWS - 3 {
+				let mut window = vec![];
+				(start_row..start_row + 4)
+					.into_iter()
+					.for_each(|row| window.push(self.board[row][col]));
+
+				if check_for_win_in_window(&window) {
+					return true;
+				}
 			}
 		}
 
-		// Checks all the down-right diagonals
-		let dr_starts = [[2, 0], [1, 0], [0, 0], [0, 1], [0, 2], [0, 3]];
-		for point in dr_starts.iter() {
-			if check_line(point[0], point[1], Box::new(dr_update)) {
-				return true;
+		// Perform a check across positively sloped diagonals
+		for row in NUM_ROWS - 3..NUM_ROWS {
+			for col in 0..NUM_COLS - 3 {
+				let mut window = vec![];
+				(0..4)
+					.into_iter()
+					.for_each(|i| window.push(self.board[row - i][col + i]));
+				if check_for_win_in_window(&window) {
+					return true;
+				}
 			}
 		}
 
-		// Checks all the down-left diagonals
-		let dl_starts = [[1, 6], [1, 6], [0, 6], [0, 5], [0, 4], [0, 3]];
-		for point in dl_starts.iter() {
-			if check_line(point[0], point[1], Box::new(dl_update)) {
-				return true;
+		// Perform a check across positively sloped diagonals
+		for row in 0..NUM_ROWS - 3 {
+			for col in 0..NUM_COLS - 3 {
+				let mut window = vec![];
+				(0..4)
+					.into_iter()
+					.for_each(|i| window.push(self.board[row + i][col + i]));
+
+				if check_for_win_in_window(&window) {
+					return true;
+				}
 			}
 		}
 
 		false
+	}
+
+	/// Calculates a heuristic score for the current player and board position
+	pub fn calculate_score(&self, color: PieceColor) -> i32 {
+		const _CENTER_COL: i32 = 5; // Playing the center column
+		const _LINE_OF_TWO: i32 = 1; // Two pieces in a line
+		const _LINE_OF_THREE: i32 = 10; // 3 pieces in a line
+		const _LINE_OF_FOUR: i32 = 100_000; // Self Won
+
+		const _OPPONENT_LINE_OF_THREE: i32 = -20; // Opponent can win
+		const _OPPONENT_LINE_OF_THREE_WITH_BELOW: i32 = -10_000; // Opponent can win
+		const _OPPONENT_LINE_OF_TWO: i32 = -3; // Opponent can setup for win
+
+		let mut score = 0;
+
+		let calculate_window_score = |window: &[(BoardCell, bool)]| -> i32 {
+			let mut own_count = 0;
+			let mut opponent_count = 0;
+			let mut empty_no_below_count = 0;
+			let mut empty_with_below_count = 0;
+
+			// log::info!("{:?}", window);
+
+			for cell in window.iter() {
+				match cell.0 {
+					None => match cell.1 {
+						false => empty_no_below_count += 1,
+						true => empty_with_below_count += 1,
+					},
+					Some(c) => {
+						if c == color {
+							own_count += 1;
+						} else {
+							opponent_count += 1;
+						}
+					}
+				}
+			}
+
+			if own_count > 0 && opponent_count > 0 {
+				return 0;
+			}
+
+			match (
+				own_count,
+				opponent_count,
+				empty_with_below_count,
+				empty_no_below_count,
+			) {
+				(4, 0, 0, 0) => _LINE_OF_FOUR,
+				(3, 0, _, _) => _LINE_OF_THREE,
+				(2, 0, _, _) => _LINE_OF_TWO,
+				(0, 3, 1, 0) => _OPPONENT_LINE_OF_THREE_WITH_BELOW,
+				(0, 3, 0, 1) => _OPPONENT_LINE_OF_THREE,
+				(0, 2, _, _) => _OPPONENT_LINE_OF_TWO,
+				_ => 0,
+			}
+		};
+
+		// log::info!("{}\nColumn Heights: {:?}", self, self.column_heights);
+
+		// Performs a check across all rows
+		for row in 0..NUM_ROWS {
+			for start_col in 0..NUM_COLS - 3 {
+				let mut window: Vec<(BoardCell, bool)> = vec![];
+				(start_col..start_col + 4).into_iter().for_each(|col| {
+					window.push((
+						self.board[row][col],
+						self.column_heights[col] >= NUM_ROWS - row - 1,
+					))
+				});
+				score += calculate_window_score(&window);
+			}
+		}
+
+		let h_points = score;
+		// log::info!("Horizontal {}: {}", color, h_points);
+		// Performs a check across all columns
+		for col in 0..NUM_COLS {
+			for start_row in 0..NUM_ROWS - 3 {
+				let mut window: Vec<(BoardCell, bool)> = vec![];
+				(start_row..start_row + 4)
+					.into_iter()
+					.for_each(|row| window.push((self.board[row][col], true)));
+				score += calculate_window_score(&window);
+			}
+		}
+		let v_points = score - h_points;
+		// log::info!("Vertical {}: {}", color, v_points);
+
+		// Perform a check across positively sloped diagonals
+		for row in NUM_ROWS - 3..NUM_ROWS {
+			for col in 0..NUM_COLS - 3 {
+				let mut window: Vec<(BoardCell, bool)> = vec![];
+				(0..4).into_iter().for_each(|i| {
+					window.push((
+						self.board[row - i][col + i],
+						self.column_heights[col + i] >= NUM_ROWS - (row - i) - 1,
+					))
+				});
+				score += calculate_window_score(&window);
+			}
+		}
+
+		let pd_points = score - h_points - v_points;
+		// log::info!("Positive Diagonal {}: {}", color, pd_points);
+		// Perform a check across positively sloped diagonals
+		for row in 0..NUM_ROWS - 3 {
+			for col in 0..NUM_COLS - 3 {
+				let mut window = vec![];
+				(0..4).into_iter().for_each(|i| {
+					window.push((
+						self.board[row + i][col + i],
+						self.column_heights[col + i] >= NUM_ROWS - (row + i) - 1,
+					))
+				});
+				score += calculate_window_score(&window);
+			}
+		}
+
+		let nd_points = score - h_points - v_points - pd_points;
+		// log::info!("Negative Diagonal {}: {}", color, nd_points);
+
+		// Gives +2 points for every block in the center column
+		for row in 0..NUM_ROWS {
+			match self.board[row][3] {
+				None => {}
+				Some(c) => {
+					if c == color {
+						score += _CENTER_COL
+					}
+				}
+			}
+		}
+
+		let c_points = score - h_points - v_points - pd_points - nd_points;
+		// log::info!("Center Diagonal {}: {}", color, c_points);
+
+		score
+	}
+
+	/// Gets the columns ordered by distance from the center
+	pub fn get_columns(&self) -> [usize; NUM_COLS] {
+		return [3, 2, 4, 1, 5, 0, 6];
 	}
 }
 
@@ -176,13 +306,5 @@ impl Display for Connect4 {
 		print_string.push_str("0 1 2 3 4 5 6");
 
 		write!(f, "\nCurrent Board:\n{}\n", print_string)
-	}
-}
-
-impl Copy for Connect4 {}
-
-impl Clone for Connect4 {
-	fn clone(&self) -> Self {
-		*self
 	}
 }
