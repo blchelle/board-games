@@ -26,6 +26,7 @@ impl Component for NavBar {
 				<div class="navbar__links">
 					<RouterButton route=AppRoute::Connect4> {"CONNECT4"} </RouterButton>
 					<RouterButton route=AppRoute::TootAndOtto> {"TOOT 'N OTTO"} </RouterButton>
+					<RouterButton route=AppRoute::Stats> {"STATS"} </RouterButton>
 					<RouterButton route=AppRoute::Login> {"LOGIN"} </RouterButton>
 				</div>
 			</div>

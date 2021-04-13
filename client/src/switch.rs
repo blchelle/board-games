@@ -6,8 +6,8 @@ use yew_router::{components::RouterAnchor, prelude::*};
 
 #[derive(Clone, Debug, Switch)]
 pub enum AppRoute {
-	#[to = "/signup/"]
-	SignUp,
+	#[to = "/stats/"]
+	Stats,
 	#[to = "/login/"]
 	Login,
 	#[to = "/connect-4/"]

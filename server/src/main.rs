@@ -17,6 +17,14 @@ pub struct UserInfo {
     pub username: String,
     pub password: String,
 }
+
+#[derive(FromForm, Debug, Serialize, Deserialize)]
+pub struct ScoreUpdate {
+    pub username: String,
+    pub game: u8, // 0 connect 4, 1 toot
+    pub win: bool,
+}
+
 #[derive(FromForm, Debug, Serialize, Deserialize)]
 pub struct GameInfo {
     pub username: String,
@@ -61,18 +69,41 @@ fn login(user: Json<UserInfo>) -> Json<String> {
     Json(String::from(format!("Login success")))
 }
 
+#[post("/update_score", format = "application/json", data = "<score>")]
+fn update_score(score: Json<ScoreUpdate>) -> Json<String> {
+    match database::MyMongo::new() {
+        Ok(mut db) => match db.update_score(&score.username, score.game, score.win) {
+            Ok(res) => {
+                if res {
+                    return Json(String::from("Update success"));
+                } else {
+                    return Json(String::from("Update failed"));
+                }
+            }
+            Err(e) => return Json(String::from("Update failed")),
+        },
+        Err(e) => return Json(String::from("Update failed")),
+    }
+}
+
 #[get("/scores/<username>")]
-fn get_scores(username: &RawStr) -> Json<String> {
+fn get_scores(username: &RawStr) -> Json<GameInfo> {
+    let err = GameInfo {
+        username: "".to_string(),
+        xo_wins: -1,
+        xo_total: -1,
+        to_wins: -1,
+        to_total: -1,
+    };
     match database::MyMongo::new() {
         Ok(mut db) => {
             match db.get_game_score(username.to_string()) {
-                Ok(r) => return Json(serde_json::to_string(&r).unwrap()),
-                Err(e) => return Json(String::from("User not found")),
+                Ok(r) => return Json(r.unwrap()),
+                Err(e) => return Json(err),
             };
         }
-        Err(e) => return Json(String::from("Error connecting to database")),
+        Err(e) => return Json(err),
     }
-    Json(String::from(format!("Unexpected error")))
 }
 
 fn main() {
@@ -82,6 +113,9 @@ fn main() {
         .allow_credentials(true);
     rocket::ignite()
         .attach(cors.to_cors().unwrap())
-        .mount("/", routes![index, new_user, login, get_scores])
+        .mount(
+            "/",
+            routes![index, new_user, login, get_scores, update_score],
+        )
         .launch();
 }

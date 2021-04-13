@@ -7,6 +7,7 @@ mod components {
     pub mod connect4_board;
     pub mod login;
     pub mod navbar;
+    pub mod stats;
     pub mod toot_and_otto_board;
 }
 

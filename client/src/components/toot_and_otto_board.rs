@@ -7,19 +7,53 @@ use crate::{
 	},
 	types::opponent::Opponent,
 };
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 use strum::IntoEnumIterator;
-use yew::prelude::*;
+use yew::services::fetch::{FetchService, FetchTask, Request, Response};
+use yew::{
+	format::{Json, Nothing},
+	prelude::*,
+};
+use yew::{html, Callback, Component, ComponentLink, Html, InputData, Properties, ShouldRender};
 
 pub struct TootAndOttoBoard {
 	link: ComponentLink<Self>,
 	board: TootAndOtto,
 	vs: Opponent,
+	fetch_task: Option<FetchTask>,
 }
 
 pub enum Msg {
 	DropPiece(PieceLetter, usize),
 	Reset,
 	ChangeOpponent(Opponent),
+	ReceiveResponse(Result<String, anyhow::Error>),
+}
+
+impl TootAndOttoBoard {
+	fn update_score(&mut self, win: bool) {
+		let ls = web_sys::window().unwrap().local_storage().unwrap().unwrap();
+		let username = ls.get_item("user_logged_in").unwrap().unwrap();
+		if username == "" {
+			return;
+		}
+		let body = &json!({"username": &username, "game": 1, "win": win});
+		let request = Request::post("http://localhost:8000/update_score")
+			.header("Content-Type", "application/json")
+			.body(Json(body))
+			.expect("Could not build that request.");
+		let callback = self
+			.link
+			.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+				let Json(data) = response.into_body();
+				Msg::ReceiveResponse(data)
+			});
+		// 3. pass the request and callback to the fetch service
+		let task = FetchService::fetch(request, callback).expect("failed to start request");
+		// 4. store the task so it isn't canceled immediately
+		self.fetch_task = Some(task);
+	}
 }
 
 impl Component for TootAndOttoBoard {
@@ -30,6 +64,7 @@ impl Component for TootAndOttoBoard {
 			link,
 			board: TootAndOtto::new(),
 			vs: Opponent::Human,
+			fetch_task: None,
 		}
 	}
 
@@ -46,6 +81,10 @@ impl Component for TootAndOttoBoard {
 
 				log::info!("Is game over {}", self.board.is_terminal);
 				if self.board.is_terminal {
+					match self.board.winner.unwrap() {
+						OTTO => self.update_score(false),
+						TOOT => self.update_score(true),
+					}
 					return true;
 				}
 
@@ -64,6 +103,14 @@ impl Component for TootAndOttoBoard {
 			Msg::Reset => {
 				self.board = TootAndOtto::new();
 			}
+			Msg::ReceiveResponse(response) => match response.unwrap().as_str() {
+				"Update success" => {
+					log::info!("Update success");
+				}
+				_ => {
+					log::info!("Update fail");
+				}
+			},
 		}
 
 		true

@@ -6,21 +6,55 @@ use crate::{
 	},
 	types::opponent::Opponent,
 };
-
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 use strum::IntoEnumIterator;
 use yew::prelude::*;
+use yew::services::fetch::{FetchService, FetchTask, Request, Response};
+use yew::{
+	format::{Json, Nothing},
+	prelude::*,
+};
+use yew::{html, Callback, Component, ComponentLink, Html, InputData, Properties, ShouldRender};
 
 pub struct Connect4Board {
 	board: Connect4,
 	active_player: PieceColor,
 	vs: Opponent,
 	link: ComponentLink<Self>,
+	fetch_task: Option<FetchTask>,
 }
 
 pub enum Msg {
 	DropPiece(usize),
 	Reset,
 	ChangeOpponent(Opponent),
+	ReceiveResponse(Result<String, anyhow::Error>),
+}
+
+impl Connect4Board {
+	fn update_score(&mut self, win: bool) {
+		let ls = web_sys::window().unwrap().local_storage().unwrap().unwrap();
+		let username = ls.get_item("user_logged_in").unwrap().unwrap();
+		if username == "" {
+			return;
+		}
+		let body = &json!({"username": &username, "game": 0, "win": win});
+		let request = Request::post("http://localhost:8000/update_score")
+			.header("Content-Type", "application/json")
+			.body(Json(body))
+			.expect("Could not build that request.");
+		let callback = self
+			.link
+			.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+				let Json(data) = response.into_body();
+				Msg::ReceiveResponse(data)
+			});
+		// 3. pass the request and callback to the fetch service
+		let task = FetchService::fetch(request, callback).expect("failed to start request");
+		// 4. store the task so it isn't canceled immediately
+		self.fetch_task = Some(task);
+	}
 }
 
 impl Component for Connect4Board {
@@ -32,6 +66,7 @@ impl Component for Connect4Board {
 			active_player: RED,
 			board: Connect4::new(),
 			vs: Opponent::HardCPU,
+			fetch_task: None,
 		}
 	}
 
@@ -48,7 +83,13 @@ impl Component for Connect4Board {
 					return false;
 				}
 
-				if let Some(_) = self.board.winner {
+				if let Some(winner) = self.board.winner {
+					// player is red
+					// update game score
+					match winner {
+						PieceColor::RED => self.update_score(true),
+						PieceColor::YELLOW => self.update_score(false),
+					}
 					return true;
 				}
 
@@ -57,15 +98,18 @@ impl Component for Connect4Board {
 				match self.vs {
 					Opponent::Human => return true,
 					Opponent::EasyCPU => {
-						self.board
+						self
+							.board
 							.drop(self.active_player, cpu::make_move(self.board, 1));
 					}
 					Opponent::MediumCPU => {
-						self.board
+						self
+							.board
 							.drop(self.active_player, cpu::make_move(self.board, 5));
 					}
 					Opponent::HardCPU => {
-						self.board
+						self
+							.board
 							.drop(self.active_player, cpu::make_move(self.board, 15));
 					}
 				};
@@ -81,6 +125,14 @@ impl Component for Connect4Board {
 					self.vs = opponent;
 				}
 			}
+			Msg::ReceiveResponse(response) => match response.unwrap().as_str() {
+				"Update success" => {
+					log::info!("Update success");
+				}
+				_ => {
+					log::info!("Update fail");
+				}
+			},
 		};
 
 		true
