@@ -35,7 +35,13 @@ pub enum Msg {
 impl Connect4Board {
 	fn update_score(&mut self, win: bool) {
 		let ls = web_sys::window().unwrap().local_storage().unwrap().unwrap();
-		let username = ls.get_item("user_logged_in").unwrap().unwrap();
+		let username = match ls.get_item("user_logged_in") {
+			Ok(a) => match a {
+				Some(b) => b,
+				None => "".to_string(),
+			},
+			Err(_) => "".to_string(),
+		};
 		if username == "" {
 			return;
 		}
