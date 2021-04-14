@@ -130,7 +130,7 @@ impl Component for LoginPage {
         },
         _ => html! {
           <>
-            <div>{format!("Logged in as {}", username)}</div>
+            <div class="login-header">{format!("Logged in as {}", username)}</div>
             <button id="login-submit" onclick=self.link.callback(move |_| Msg::Logout)>{"Logout"}</button>
           </>
         },
