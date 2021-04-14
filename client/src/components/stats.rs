@@ -100,7 +100,7 @@ impl Component for Stats {
 
   fn view(&self) -> Html {
     if self.game_info.is_none() {
-      return html! {<div>{"Please log in to see stats"}</div>};
+      return html! {<div class="stats_header">{"Please log in to see stats"}</div>};
     }
     let gi = self.game_info.as_ref().unwrap();
     if gi.username == "" {
@@ -109,12 +109,12 @@ impl Component for Stats {
       };
     }
     html! {
-      <div>
-        <div>{format!("Game stats for {}", gi.username)}</div>
-        <div>{format!("Connect 4 wins {}", gi.xo_wins)}</div>
-        <div>{format!("Connect 4 losses {}", gi.xo_total - gi.xo_wins)}</div>
-        <div>{format!("Toot and Otto wins {}", gi.to_wins)}</div>
-        <div>{format!("Toot and Otto losses {}", gi.to_total - gi.to_wins)}</div>
+      <div class="stats_page">
+        <h1 class="stats_header">{format!("Game stats for {}", gi.username)}</h1>
+        <h2 class="stats_entry">{format!("Connect 4 wins {}", gi.xo_wins)}</h2>
+        <h2 class="stats_entry">{format!("Connect 4 losses {}", gi.xo_total - gi.xo_wins)}</h2>
+        <h2 class="stats_entry">{format!("Toot and Otto wins {}", gi.to_wins)}</h2>
+        <h2 class="stats_entry">{format!("Toot and Otto losses {}", gi.to_total - gi.to_wins)}</h2>
       </div>
     }
   }
