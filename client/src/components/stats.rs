@@ -57,7 +57,13 @@ impl Component for Stats {
   type Properties = ();
   fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
     let ls = web_sys::window().unwrap().local_storage().unwrap().unwrap();
-    let username = ls.get_item("user_logged_in").unwrap().unwrap();
+    let username = match ls.get_item("user_logged_in") {
+      Ok(a) => match a {
+        Some(b) => b,
+        None => "".to_string(),
+      },
+      Err(_) => "".to_string(),
+    };
     Self {
       link: link,
       username: username,

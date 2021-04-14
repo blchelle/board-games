@@ -115,7 +115,13 @@ impl Component for LoginPage {
   fn view(&self) -> Html {
     let window = web_sys::window().unwrap();
     let ls = window.local_storage().unwrap().unwrap();
-    let username = ls.get_item("user_logged_in").unwrap().unwrap();
+    let username = match ls.get_item("user_logged_in") {
+      Ok(a) => match a {
+        Some(b) => b,
+        None => "".to_string(),
+      },
+      Err(_) => "".to_string(),
+    };
     let login_status = move || -> Html {
       match username.as_str() {
         "" => html! {
