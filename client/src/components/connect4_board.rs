@@ -44,12 +44,12 @@ impl Connect4Board {
 			.header("Content-Type", "application/json")
 			.body(Json(body))
 			.expect("Could not build that request.");
-		let callback = self
-			.link
-			.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
-				let Json(data) = response.into_body();
-				Msg::ReceiveResponse(data)
-			});
+		let callback =
+			self.link
+				.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+					let Json(data) = response.into_body();
+					Msg::ReceiveResponse(data)
+				});
 		// 3. pass the request and callback to the fetch service
 		let task = FetchService::fetch(request, callback).expect("failed to start request");
 		// 4. store the task so it isn't canceled immediately
@@ -98,19 +98,16 @@ impl Component for Connect4Board {
 				match self.vs {
 					Opponent::Human => return true,
 					Opponent::EasyCPU => {
-						self
-							.board
+						self.board
 							.drop(self.active_player, cpu::make_move(self.board, 1));
 					}
 					Opponent::MediumCPU => {
-						self
-							.board
-							.drop(self.active_player, cpu::make_move(self.board, 5));
+						self.board
+							.drop(self.active_player, cpu::make_move(self.board, 3));
 					}
 					Opponent::HardCPU => {
-						self
-							.board
-							.drop(self.active_player, cpu::make_move(self.board, 15));
+						self.board
+							.drop(self.active_player, cpu::make_move(self.board, 7));
 					}
 				};
 
@@ -143,44 +140,98 @@ impl Component for Connect4Board {
 	}
 
 	fn view(&self) -> Html {
-		let check_for_piece = move |row: usize, col: usize| -> Html {
-			match self.board.board[row][col] {
-				None => html! {<div class="piece piece--empty"></div>},
-				Some(color) => match color {
-					RED => html! {<div class="piece piece--red">{"R"}</div>},
-					YELLOW => html! {<div class="piece piece--yellow">{"Y"}</div>},
-				},
+		let floating_piece_letter = move || -> &str {
+			match self.active_player {
+				RED => "R",
+				YELLOW => "Y",
 			}
 		};
 
-		let game_status = move || -> Html {
-			if self.board.moves_played >= 42 {
-				return html! {<p>{"It's a draw!"}</p>};
+		let check_for_piece = move |row: usize, col: usize| -> Html {
+			let mut classes = String::from("piece");
+
+			if let Some(_) = self.board.winner {
+				if self
+					.board
+					.check_for_win(self.active_player.switch())
+					.unwrap()
+					.contains(&[row, col])
+				{
+					classes.push_str(" piece--winner");
+				}
 			}
 
-			match self.board.winner {
-				None => {
-					html! {<p>{format!("Turn {}, {}'s Move", self.board.moves_played, self.active_player)}</p>}
-				}
-				Some(winner) => match winner {
-					RED => html! {<p>{"Player 1 Wins!"}</p>},
-					YELLOW => html! {<p>{"Player 2 Wins!"}</p>},
+			classes.push_str(match self.board.board[row][col] {
+				None => " piece--empty",
+				Some(color) => match color {
+					RED => " piece--red",
+					YELLOW => " piece--yellow",
 				},
+			});
+
+			let letter = match self.board.board[row][col] {
+				None => "",
+				Some(color) => match color {
+					RED => "R",
+					YELLOW => "Y",
+				},
+			};
+
+			html! {<div class=classes>{letter}</div>}
+		};
+
+		let game_status = move || -> Html {
+			let arrow_color_class = match self.active_player {
+				RED => "turn__arrow--red",
+				YELLOW => "turn__arrow--yellow",
+			};
+
+			let arrow_text = match self.board.winner {
+				None => match self.board.is_terminal {
+					false => format!("Turn {}", self.board.moves_played + 1),
+					true => String::from("DRAW!"),
+				},
+				Some(color) => match color {
+					RED => String::from("Red Wins!"),
+					YELLOW => String::from("YELLOW Wins!"),
+				},
+			};
+
+			html! {
+				<div class="turn">
+					<div class="turn__piece turn__piece--red">{"R"}</div>
+					<div class=format!("turn__arrow {}", arrow_color_class)>
+						{
+							arrow_text
+						}
+					</div>
+					<div class="turn__piece turn__piece--yellow">{"Y"}</div>
+				</div>
 			}
 		};
 
 		let opponent_buttons = move || -> Html {
 			html! {
-				Opponent::iter().map(|opponent| {
-					html! {
-						<button
-							class=format!("opponent__button {}", if self.vs == opponent {"opponent__button--selected"} else {""})
-							onclick=self.link.callback(move |_| Msg::ChangeOpponent(opponent))
-						>
-							{opponent}
-						</button>
+				<div class="opponent">
+					{
+						Opponent::iter().map(|opponent| {
+							html! {
+								<button
+									class=format!("opponent__button {}", if self.vs == opponent {"opponent__button--selected"} else {""})
+									onclick=self.link.callback(move |_| Msg::ChangeOpponent(opponent))
+								>
+									{opponent}
+								</button>
+						}}).collect::<Html>()
 					}
-				}).collect::<Html>()
+				</div>
+			}
+		};
+
+		let floating_piece_class = move || -> &str {
+			match self.active_player {
+				RED => "piece--red",
+				YELLOW => "piece--yellow",
 			}
 		};
 
@@ -191,24 +242,27 @@ impl Component for Connect4Board {
 					(0..NUM_COLS).into_iter().map(|col| {
 						return html! {
 							<div class="column" onclick=self.link.callback(move |_| Msg::DropPiece(col))>
-							{
-								(0..NUM_ROWS).into_iter().map(|row| {
-									return html! {
-										<div class="cell">{check_for_piece(row, col)}</div>
-									}
-								}).collect::<Html>()
-							}
+								<div class="cell cell--floating">
+									<div class={format!("piece piece--hidden {}", floating_piece_class())}>{floating_piece_letter()}</div>
+								</div>
+								{
+									(0..NUM_ROWS).into_iter().map(|row| {
+										return html! {
+											<div class="cell">
+												{check_for_piece(row, col)}
+											</div>
+										}
+									}).collect::<Html>()
+								}
 							</div>
 						}
 					}).collect::<Html>()
 				}
 				</div>
-				<div class="opponent">
-					{opponent_buttons()}
-				</div>
+				{game_status()}
 				<div class="dashboard">
-					<button onclick=self.link.callback(move |_| Msg::Reset)>{"Reset Game"}</button>
-					{game_status()}
+					<button onclick=self.link.callback(move |_| Msg::Reset)>{"RESET"}</button>
+					{opponent_buttons()}
 				</div>
 			</div>
 		}

@@ -13,10 +13,8 @@
 }
 
 .column {
-	background-color: var(--color-primary);
-
-	&:hover {
-		background-color: var(--color-primary-light);
+	&:hover .cell--floating .piece {
+		opacity: 1;
 	}
 }
 
@@ -24,12 +22,15 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	border: 1px solid var(--color-primary-light);
 
+	background: var(--color-primary);
 	width: 10rem;
 	height: 10rem;
 
 	&--floating {
 		background-color: var(--color-white);
+		border: 1px solid transparent;
 	}
 }
 
@@ -39,10 +40,15 @@
 	align-items: center;
 
 	font-size: 2rem;
+	font-weight: bold;
 
-	width: 75%;
-	height: 75%;
+	border: 5px solid var(--color-primary-light);
+
+	width: 85%;
+	height: 85%;
 	border-radius: 50%;
+
+	transition: background 0.1s linear;
 
 	&--floating {
 		border: 3px solid var(--color-primary);
@@ -68,12 +74,12 @@
 	}
 
 	&--red {
-		background-color: var(--color-c4-red);
+		background: var(--color-c4-red);
 		color: var(--color-white);
 	}
 
 	&--yellow {
-		background-color: var(--color-c4-yellow);
+		background: var(--color-c4-yellow);
 	}
 
 	&--toot-n-otto {
@@ -82,12 +88,22 @@
 		font-size: 3rem;
 		font-weight: bold;
 	}
+
+	&--winner {
+		color: black;
+	}
+
+	&--hidden {
+		opacity: 0;
+		border: 2px solid #222;
+	}
 }
 
 .dashboard {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	margin-bottom: 2rem;
 
 	align-self: stretch;
 }
@@ -95,7 +111,6 @@
 .opponent {
 	display: flex;
 	justify-content: center;
-	margin-bottom: 2rem;
 
 	&__button {
 		border-radius: 0;
@@ -128,8 +143,62 @@
 		display: flex;
 		justify-content: space-between;
 		align-self: stretch;
+	}
+}
 
-		margin-bottom: 2rem;
+.turn {
+	align-self: stretch;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 2rem;
+
+	&__arrow {
+		width: 10rem;
+		height: 7rem;
+
+		transition: clip-path 0.2s linear;
+
+		&--red {
+			background-color: var(--color-c4-red);
+			clip-path: polygon(40% 0%, 40% 20%, 100% 20%, 100% 80%, 40% 80%, 40% 100%, 0% 50%);
+		}
+
+		&--yellow {
+			background-color: var(--color-c4-yellow);
+			clip-path: polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%);
+		}
+	}
+
+	&__piece {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		font-size: 2rem;
+		font-weight: bold;
+
+		width: 7rem;
+		height: 7rem;
+		border-radius: 50%;
+
+		&--red {
+			background-color: var(--color-c4-red);
+			color: var(--color-white);
+		}
+
+		&--yellow {
+			background-color: var(--color-c4-yellow);
+		}
+	}
+}
+
+@keyframes fade-in-red-piece {
+	from {
+		opacity: var(--color-white);
+	}
+	to {
+		opacity: var(--color-c4-red);
 	}
 }
 

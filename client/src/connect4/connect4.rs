@@ -53,8 +53,8 @@ impl Connect4 {
 		self.board[row][col] = Some(color);
 		self.moves_played += 1;
 		self.winner = match self.check_for_win(color) {
-			true => Some(color),
-			false => None,
+			Some(_) => Some(color),
+			None => None,
 		};
 		self.is_terminal = self.winner != None || self.moves_played == NUM_COLS * NUM_ROWS;
 		self.column_heights[col] += 1;
@@ -63,7 +63,7 @@ impl Connect4 {
 	}
 
 	/// Checks to see if a color has one the game
-	pub fn check_for_win(&self, color: PieceColor) -> bool {
+	pub fn check_for_win(&self, color: PieceColor) -> Option<Vec<[usize; 2]>> {
 		let check_for_win_in_window = |window: &[BoardCell]| -> bool {
 			for cell in window.iter() {
 				match cell {
@@ -84,7 +84,7 @@ impl Connect4 {
 			for start_col in 0..NUM_COLS - 3 {
 				let window = &self.board[row][start_col..start_col + 4];
 				if check_for_win_in_window(window) {
-					return true;
+					return Some((0..4).into_iter().map(|i| [row, start_col + i]).collect());
 				}
 			}
 		}
@@ -98,7 +98,7 @@ impl Connect4 {
 					.for_each(|row| window.push(self.board[row][col]));
 
 				if check_for_win_in_window(&window) {
-					return true;
+					return Some((0..4).into_iter().map(|i| [start_row + i, col]).collect());
 				}
 			}
 		}
@@ -111,7 +111,7 @@ impl Connect4 {
 					.into_iter()
 					.for_each(|i| window.push(self.board[row - i][col + i]));
 				if check_for_win_in_window(&window) {
-					return true;
+					return Some((0..4).into_iter().map(|i| [row - i, col + i]).collect());
 				}
 			}
 		}
@@ -125,12 +125,12 @@ impl Connect4 {
 					.for_each(|i| window.push(self.board[row + i][col + i]));
 
 				if check_for_win_in_window(&window) {
-					return true;
+					return Some((0..4).into_iter().map(|i| [row + i, col + i]).collect());
 				}
 			}
 		}
 
-		false
+		None
 	}
 
 	/// Calculates a heuristic score for the current player and board position
