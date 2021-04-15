@@ -45,12 +45,12 @@ impl TootAndOttoBoard {
 			.header("Content-Type", "application/json")
 			.body(Json(body))
 			.expect("Could not build that request.");
-		let callback = self
-			.link
-			.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
-				let Json(data) = response.into_body();
-				Msg::ReceiveResponse(data)
-			});
+		let callback =
+			self.link
+				.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+					let Json(data) = response.into_body();
+					Msg::ReceiveResponse(data)
+				});
 		// 3. pass the request and callback to the fetch service
 		let task = FetchService::fetch(request, callback).expect("failed to start request");
 		// 4. store the task so it isn't canceled immediately
@@ -119,7 +119,9 @@ impl Component for TootAndOttoBoard {
 				}
 			}
 			Msg::ChangeOpponent(opponent) => {
-				self.vs = opponent;
+				if self.board.moves_played == 0 {
+					self.vs = opponent;
+				}
 			}
 			Msg::Reset => {
 				self.board = TootAndOtto::new();
@@ -291,8 +293,8 @@ impl Component for TootAndOttoBoard {
 				</div>
 				{game_status()}
 				<div class="dashboard">
-					<button onclick=self.link.callback(move |_| Msg::Reset)>{"RESET"}</button>
-					<div class="opponent">
+					<button class="dashboard__reset" onclick=self.link.callback(move |_| Msg::Reset)>{"RESET"}</button>
+					<div class=format!("opponent {}", if self.board.moves_played > 0 { "opponent--disabled" } else { "" })>
 						{opponent_buttons()}
 					</div>
 				</div>

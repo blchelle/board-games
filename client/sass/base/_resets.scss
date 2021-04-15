@@ -3,11 +3,14 @@ button {
 	justify-content: center;
 	align-items: center;
 
+	text-transform: uppercase;
+
 	cursor: pointer;
 	border: none;
 
 	height: 5rem;
 	font-size: 1.8rem;
+	font-weight: bold;
 	border-radius: 1rem;
 	padding: 1rem 2rem 1rem 2rem;
 

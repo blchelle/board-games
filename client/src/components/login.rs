@@ -1,14 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::fmt::{Display, Formatter};
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
+use yew::format::Json;
+use yew::prelude::*;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
-use yew::{
-  format::{Json, Nothing},
-  prelude::*,
-};
-use yew::{html, Callback, Component, ComponentLink, Html, InputData, Properties, ShouldRender};
 
 pub struct LoginPage {
   link: ComponentLink<Self>,
@@ -73,6 +67,10 @@ impl Component for LoginPage {
   fn update(&mut self, msg: Self::Message) -> ShouldRender {
     match msg {
       Msg::Login(login) => {
+        if self.username.len() == 0 || self.password.len() == 0 {
+          return false;
+        }
+
         self.login(login);
       }
       Msg::UpdateUsername(username) => self.username = username,
@@ -140,16 +138,55 @@ impl Component for LoginPage {
       },
       Err(_) => "".to_string(),
     };
+
+    let submit_button_class = if self.username.len() > 0 && self.password.len() > 0 {
+      ""
+    } else {
+      "button--disabled"
+    };
+
     let login_status = move || -> Html {
       match username.as_str() {
         "" => html! {
           <>
-            <input type="text" name="username" id="login-username" placeholder="Username" class="login-form-field" value={&self.username}
-              oninput=self.link.callback(|e: InputData| Msg::UpdateUsername(e.value))/>
-            <input type="password" name="password" id="login-password" placeholder="Password" class="login-form-field"
-              oninput=self.link.callback(|e: InputData| Msg::UpdatePassword(e.value))/>
-            <button id="login-submit" onclick=self.link.callback(move |_| Msg::Login(true))>{"Login"}</button>
-            <button id="login-submit" onclick=self.link.callback(move |_| Msg::Login(false))>{"Sign up"}</button>
+            <h4>
+              {"Enter your authentication credentials below and login or create an account with them"}
+            </h4>
+            <div class="auth__container auth__container--username">
+            <label class={if self.username.len() > 0 {"raised"} else {""}}>
+              {"Username"}
+            </label>
+              <input
+                type="text"
+                name="username"
+                id="login-username"
+                value={&self.username}
+                oninput=self.link.callback(|e: InputData| Msg::UpdateUsername(e.value))/>
+            </div>
+            <div class="auth__container auth__container--password">
+              <label class={if self.password.len() > 0 {"raised"} else {""}}>
+                {"Password"}
+              </label>
+              <input
+                type="password"
+                name="password"
+                id="login-password"
+                oninput=self.link.callback(|e: InputData| Msg::UpdatePassword(e.value))/>
+            </div>
+            <button
+                class=submit_button_class
+                id="button--login"
+                onclick=self.link.callback(move |_| Msg::Login(true))
+            >
+                {"Login"}
+            </button>
+            <button
+                class=submit_button_class
+                id="button--signup"
+                onclick=self.link.callback(move |_| Msg::Login(false))
+            >
+                {"Sign up"}
+            </button>
           </>
         },
         _ => html! {
