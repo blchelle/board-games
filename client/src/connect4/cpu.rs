@@ -1,5 +1,5 @@
 use super::{connect4::Connect4, piece_color::PieceColor::*};
-use rand::seq::SliceRandom; // 0.7.2
+use rand::seq::SliceRandom;
 
 pub fn make_move(board: Connect4, depth: usize) -> usize {
 	let (col, _) = minmax(board, depth, true);
@@ -19,10 +19,8 @@ fn minmax(board: Connect4, depth: usize, is_cpu_turn: bool) -> (usize, i32) {
 		return (3, board.calculate_score(YELLOW));
 	}
 
-	let mut best_col: usize = 0;
-
 	if is_cpu_turn {
-		let mut value = i32::MIN;
+		let mut best_options = vec![(0, i32::MIN)];
 
 		for col in board.get_columns().iter() {
 			let mut copy_board = board.clone();
@@ -32,44 +30,32 @@ fn minmax(board: Connect4, depth: usize, is_cpu_turn: bool) -> (usize, i32) {
 			}
 			let new_value = minmax(copy_board, depth - 1, false).1;
 
-			if new_value == value {
-				let random_choice = *vec![(new_value, *col), (value, best_col)]
-					.choose(&mut rand::thread_rng())
-					.unwrap();
-
-				value = random_choice.0;
-				best_col = random_choice.1;
-			} else if new_value > value {
-				value = new_value;
-				best_col = *col;
+			if new_value == best_options[0].1 {
+				best_options.push((*col, new_value));
+			} else if new_value > best_options[0].1 {
+				best_options = vec![(*col, new_value)];
 			}
 		}
 
-		return (best_col, value);
+		*best_options.choose(&mut rand::thread_rng()).unwrap()
 	} else {
-		let mut value = i32::MAX;
+		let mut best_options = vec![(0, i32::MAX)];
+
 		for col in board.get_columns().iter() {
 			let mut copy_board = board.clone();
 			if copy_board.drop(*col) == false {
 				continue;
 			}
-			// log::info!("==========Column {} for {}==========", col, RED);
+
 			let new_value = minmax(copy_board, depth - 1, true).1;
-			// let new_value = minimax_with_ab_pruning(copy_board, depth - 1, true).1;
 
-			if new_value == value {
-				let random_choice = *vec![(new_value, *col), (value, best_col)]
-					.choose(&mut rand::thread_rng())
-					.unwrap();
-
-				value = random_choice.0;
-				best_col = random_choice.1;
-			} else if new_value < value {
-				value = new_value;
-				best_col = *col;
+			if new_value == best_options[0].1 {
+				best_options.push((*col, new_value));
+			} else if new_value < best_options[0].1 {
+				best_options = vec![(*col, new_value)];
 			}
 		}
 
-		return (best_col, value);
+		*best_options.choose(&mut rand::thread_rng()).unwrap()
 	}
 }

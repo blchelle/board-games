@@ -3,6 +3,7 @@ use super::{
 	player::Player::*,
 	toot_and_otto::TootAndOtto,
 };
+use rand::seq::SliceRandom;
 use strum::IntoEnumIterator;
 
 pub fn make_move(board: TootAndOtto, depth: usize) -> (usize, PieceLetter) {
@@ -23,11 +24,8 @@ fn minmax(board: TootAndOtto, depth: usize, is_cpu_turn: bool) -> (usize, PieceL
 		return (3, O, board.calculate_score(OTTO));
 	}
 
-	let mut best_col = 0;
-	let mut best_letter = T;
-
 	if is_cpu_turn {
-		let mut value = i32::MIN;
+		let mut best_options = vec![(0, T, i32::MIN)];
 
 		for letter in PieceLetter::iter() {
 			for col in board.get_columns().iter() {
@@ -37,49 +35,37 @@ fn minmax(board: TootAndOtto, depth: usize, is_cpu_turn: bool) -> (usize, PieceL
 					continue;
 				}
 
-				// log::info!(
-				// 	"=========Letter {}, Column {}, for {}=========\n{}",
-				// 	letter,
-				// 	col,
-				// 	OTTO,
-				// 	copy_board
-				// );
 				let new_value = minmax(copy_board, depth - 1, false).2;
 
-				if new_value > value {
-					value = new_value;
-					best_col = *col;
-					best_letter = letter;
+				if new_value == best_options[0].2 {
+					best_options.push((*col, letter, new_value));
+				} else if new_value > best_options[0].2 {
+					best_options = vec![(*col, letter, new_value)];
 				}
 			}
 		}
 
-		return (best_col, best_letter, value);
+		*best_options.choose(&mut rand::thread_rng()).unwrap()
 	} else {
-		let mut value = i32::MAX;
+		let mut best_options = vec![(0, T, i32::MAX)];
+
 		for letter in PieceLetter::iter() {
 			for col in board.get_columns().iter() {
 				let mut copy_board = board.clone();
 				if copy_board.drop(letter, *col) == false {
 					continue;
 				}
-				// log::info!(
-				// 	"=========Letter {}, Column {}, for {}=========\n{}",
-				// 	letter,
-				// 	col,
-				// 	TOOT,
-				// 	copy_board
-				// );
+
 				let new_value = minmax(copy_board, depth - 1, true).2;
 
-				if new_value < value {
-					value = new_value;
-					best_col = *col;
-					best_letter = letter
+				if new_value == best_options[0].2 {
+					best_options.push((*col, letter, new_value));
+				} else if new_value < best_options[0].2 {
+					best_options = vec![(*col, letter, new_value)];
 				}
 			}
 		}
 
-		return (best_col, best_letter, value);
+		*best_options.choose(&mut rand::thread_rng()).unwrap()
 	}
 }
