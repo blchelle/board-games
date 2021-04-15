@@ -14,9 +14,9 @@ impl Display for Opponent {
 	fn fmt(&self, f: &mut Formatter) -> Result {
 		match self {
 			Opponent::Human => write!(f, "{}", "Human"),
-			Opponent::EasyCPU => write!(f, "{}", "Easy CPU"),
-			Opponent::MediumCPU => write!(f, "{}", "Medium CPU"),
-			Opponent::HardCPU => write!(f, "{}", "Hard CPU"),
+			Opponent::EasyCPU => write!(f, "{}", "Easy"),
+			Opponent::MediumCPU => write!(f, "{}", "Medium"),
+			Opponent::HardCPU => write!(f, "{}", "Hard"),
 		}
 	}
 }

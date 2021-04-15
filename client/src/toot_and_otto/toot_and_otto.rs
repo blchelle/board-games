@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Result};
 
 use super::{
@@ -48,6 +47,21 @@ impl TootAndOtto {
 			return false;
 		}
 
+		let piece_count = match self.active_player {
+			TOOT => match letter {
+				T => self.piece_counts[0][0],
+				O => self.piece_counts[0][1],
+			},
+			OTTO => match letter {
+				T => self.piece_counts[1][0],
+				O => self.piece_counts[1][1],
+			},
+		};
+
+		if piece_count == 0 {
+			return false;
+		}
+
 		// Gets the number of pieces in the column and checks if it is full
 		let col_height = self.get_col_height(col);
 
@@ -66,19 +80,19 @@ impl TootAndOtto {
 		let otto_won = self.check_for_win(OTTO);
 
 		self.winner = match (toot_won, otto_won) {
-			(true, true) => {
+			(Some(_), Some(_)) => {
 				self.is_terminal = true;
 				None
 			}
-			(false, true) => {
+			(None, Some(_)) => {
 				self.is_terminal = true;
 				Some(OTTO)
 			}
-			(true, false) => {
+			(Some(_), None) => {
 				self.is_terminal = true;
 				Some(TOOT)
 			}
-			(false, false) => None,
+			(None, None) => None,
 		};
 
 		// Updates the piece count for the player
@@ -117,100 +131,83 @@ impl TootAndOtto {
 	}
 
 	// Checks to see if a color has one the game
-	pub fn check_for_win(&self, player: Player) -> bool {
+	pub fn check_for_win(&self, player: Player) -> Option<Vec<[usize; 2]>> {
 		let win_pattern = match player {
 			TOOT => [T, O, O, T],
 			OTTO => [O, T, T, O],
 		};
 
-		// Searches for four in a row along some linear traversal
-		let check_line = |start_y: usize,
-		                  start_x: usize,
-		                  update: Box<dyn Fn(usize, usize) -> (usize, usize)>|
-		 -> bool {
-			let mut col = start_x;
-			let mut row = start_y;
-
-			let mut pattern_index = 0;
-
-			while row < NUM_ROWS && col < NUM_COLS {
-				match self.board[row][col] {
-					None => pattern_index = 0,
-					Some(letter) => {
-						if letter == win_pattern[pattern_index] {
-							pattern_index += 1;
-						} else if letter == win_pattern[0] {
-							pattern_index = 1;
-						} else {
-							pattern_index = 0;
+		let check_for_win_in_window = |window: &[BoardCell]| -> bool {
+			for (i, cell) in window.iter().enumerate() {
+				match cell {
+					None => return false,
+					Some(c) => {
+						if *c != win_pattern[i] {
+							return false;
 						}
 					}
 				}
-
-				if pattern_index == 4 {
-					return true;
-				}
-
-				let update_coordinates = update(col, row);
-
-				// This handles an edge case in the down left update where
-				// col would go from 0 to -1 to indicate it goes out of range
-				//
-				// This would panics, so instead I keep the value as 0 and then
-				// check if the value changes.
-				if col != update_coordinates.0 || row != NUM_ROWS {
-					col = update_coordinates.0;
-					row = update_coordinates.1;
-				} else {
-					return false;
-				}
 			}
 
-			false
+			true
 		};
-
-		// Update closure functions for the four traversals
-		let row_update = |x: usize, y: usize| -> (usize, usize) { (x + 1, y) };
-		let col_update = |x: usize, y: usize| -> (usize, usize) { (x, y + 1) };
-		let dr_update = |x: usize, y: usize| -> (usize, usize) { (x + 1, y + 1) };
-		let dl_update =
-			|x: usize, y: usize| -> (usize, usize) { (if x == 0 { 0 } else { x - 1 }, y + 1) };
 
 		// Checks all the rows
 		for row in 0..NUM_ROWS {
-			if check_line(row, 0, Box::new(row_update)) {
-				return true;
+			for start_col in 0..NUM_COLS - 3 {
+				let window = &self.board[row][start_col..start_col + 4];
+				if check_for_win_in_window(window) {
+					return Some((0..4).into_iter().map(|i| [row, start_col + i]).collect());
+				}
 			}
 		}
 
-		// Checks all the columns
+		// Performs a check across all columns
 		for col in 0..NUM_COLS {
-			if check_line(0, col, Box::new(col_update)) {
-				return true;
+			for start_row in 0..NUM_ROWS - 3 {
+				let mut window = vec![];
+				(start_row..start_row + 4)
+					.into_iter()
+					.for_each(|row| window.push(self.board[row][col]));
+
+				if check_for_win_in_window(&window) {
+					return Some((0..4).into_iter().map(|i| [start_row + i, col]).collect());
+				}
 			}
 		}
 
-		// Checks all the down-right diagonals
-		let dr_starts = [[0, 0], [0, 1], [0, 2]];
-		for point in dr_starts.iter() {
-			if check_line(point[0], point[1], Box::new(dr_update)) {
-				return true;
+		// Perform a check across positively sloped diagonals
+		for col in 0..NUM_COLS - 3 {
+			let mut window = vec![];
+			(0..4)
+				.into_iter()
+				.for_each(|i| window.push(self.board[NUM_ROWS - 1 - i][col + i]));
+			if check_for_win_in_window(&window) {
+				return Some(
+					(0..4)
+						.into_iter()
+						.map(|i| [NUM_ROWS - 1 - i, col + i])
+						.collect(),
+				);
 			}
 		}
 
-		// Checks all the down-left diagonals
-		let dl_starts = [[0, 5], [0, 4], [0, 3]];
-		for point in dl_starts.iter() {
-			if check_line(point[0], point[1], Box::new(dl_update)) {
-				return true;
+		// Perform a check across positively sloped diagonals
+		for col in 0..NUM_COLS - 3 {
+			let mut window = vec![];
+			(0..4)
+				.into_iter()
+				.for_each(|i| window.push(self.board[i][col + i]));
+
+			if check_for_win_in_window(&window) {
+				return Some((0..4).into_iter().map(|i| [i, col + i]).collect());
 			}
 		}
 
-		false
+		None
 	}
 
 	pub fn calculate_score(&self, player: Player) -> i32 {
-		const _CENTER_COL: i32 = 5; // Playing the center column
 		const _LINE_OF_TWO: i32 = 1; // Two pieces in a line
 		const _LINE_OF_THREE: i32 = 10; // 3 pieces in a line
 		const _LINE_OF_FOUR: i32 = 100_000; // Self Won

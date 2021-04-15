@@ -6,20 +6,14 @@ use crate::{
 	},
 	types::opponent::Opponent,
 };
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use strum::IntoEnumIterator;
-use yew::prelude::*;
+use yew::format::Json;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
-use yew::{
-	format::{Json, Nothing},
-	prelude::*,
-};
-use yew::{html, Callback, Component, ComponentLink, Html, InputData, Properties, ShouldRender};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 pub struct Connect4Board {
 	board: Connect4,
-	active_player: PieceColor,
 	vs: Opponent,
 	link: ComponentLink<Self>,
 	fetch_task: Option<FetchTask>,
@@ -50,12 +44,12 @@ impl Connect4Board {
 			.header("Content-Type", "application/json")
 			.body(Json(body))
 			.expect("Could not build that request.");
-		let callback = self
-			.link
-			.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
-				let Json(data) = response.into_body();
-				Msg::ReceiveResponse(data)
-			});
+		let callback =
+			self.link
+				.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+					let Json(data) = response.into_body();
+					Msg::ReceiveResponse(data)
+				});
 		// 3. pass the request and callback to the fetch service
 		let task = FetchService::fetch(request, callback).expect("failed to start request");
 		// 4. store the task so it isn't canceled immediately
@@ -69,7 +63,6 @@ impl Component for Connect4Board {
 	fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
 		Self {
 			link,
-			active_player: RED,
 			board: Connect4::new(),
 			vs: Opponent::HardCPU,
 			fetch_task: None,
@@ -85,7 +78,7 @@ impl Component for Connect4Board {
 					return false;
 				}
 
-				if self.board.drop(self.active_player, col) == false {
+				if self.board.drop(col) == false {
 					return false;
 				}
 
@@ -99,31 +92,16 @@ impl Component for Connect4Board {
 					return true;
 				}
 
-				self.active_player = self.active_player.switch();
-
-				match self.vs {
+				let depth = match self.vs {
 					Opponent::Human => return true,
-					Opponent::EasyCPU => {
-						self
-							.board
-							.drop(self.active_player, cpu::make_move(self.board, 1));
-					}
-					Opponent::MediumCPU => {
-						self
-							.board
-							.drop(self.active_player, cpu::make_move(self.board, 5));
-					}
-					Opponent::HardCPU => {
-						self
-							.board
-							.drop(self.active_player, cpu::make_move(self.board, 15));
-					}
+					Opponent::EasyCPU => 1,
+					Opponent::MediumCPU => 2,
+					Opponent::HardCPU => 3,
 				};
 
-				self.active_player = self.active_player.switch();
+				self.board.drop(cpu::make_move(self.board, depth));
 			}
 			Msg::Reset => {
-				self.active_player = RED;
 				self.board = Connect4::new();
 			}
 			Msg::ChangeOpponent(opponent) => {
@@ -149,44 +127,98 @@ impl Component for Connect4Board {
 	}
 
 	fn view(&self) -> Html {
-		let check_for_piece = move |row: usize, col: usize| -> Html {
-			match self.board.board[row][col] {
-				None => html! {<div class="piece piece--empty"></div>},
-				Some(color) => match color {
-					RED => html! {<div class="piece piece--red">{"R"}</div>},
-					YELLOW => html! {<div class="piece piece--yellow">{"Y"}</div>},
-				},
+		let floating_piece_letter = move || -> &str {
+			match self.board.active_player {
+				RED => "R",
+				YELLOW => "Y",
 			}
 		};
 
-		let game_status = move || -> Html {
-			if self.board.moves_played >= 42 {
-				return html! {<p>{"It's a draw!"}</p>};
+		let check_for_piece = move |row: usize, col: usize| -> Html {
+			let mut classes = String::from("piece");
+
+			if let Some(_) = self.board.winner {
+				if self
+					.board
+					.check_for_win(self.board.active_player.switch())
+					.unwrap()
+					.contains(&[row, col])
+				{
+					classes.push_str(" piece--winner");
+				}
 			}
 
-			match self.board.winner {
-				None => {
-					html! {<p>{format!("Turn {}, {}'s Move", self.board.moves_played, self.active_player)}</p>}
-				}
-				Some(winner) => match winner {
-					RED => html! {<p>{"Player 1 Wins!"}</p>},
-					YELLOW => html! {<p>{"Player 2 Wins!"}</p>},
+			classes.push_str(match self.board.board[row][col] {
+				None => " piece--empty",
+				Some(color) => match color {
+					RED => " piece--red",
+					YELLOW => " piece--yellow",
 				},
+			});
+
+			let letter = match self.board.board[row][col] {
+				None => "",
+				Some(color) => match color {
+					RED => "R",
+					YELLOW => "Y",
+				},
+			};
+
+			html! {<div class=classes>{letter}</div>}
+		};
+
+		let game_status = move || -> Html {
+			let mut arrow_color_class = match self.board.active_player {
+				RED => "turn__arrow--red",
+				YELLOW => "turn__arrow--yellow",
+			};
+
+			if self.board.is_terminal {
+				arrow_color_class = "turn__arrow--game-over"
+			}
+
+			let arrow_text = match self.board.is_terminal {
+				false => "",
+				true => match self.board.winner {
+					Some(winner) => match winner {
+						RED => "YOU WIN!!!",
+						YELLOW => "CPU WINS :(",
+					},
+					None => "TIE GAME!",
+				},
+			};
+
+			html! {
+				<div class="turn">
+					<div class="turn__piece turn__piece--red">{"R"}</div>
+					<div class=format!("turn__arrow {}", arrow_color_class)>{arrow_text}</div>
+					<div class="turn__piece turn__piece--yellow">{"Y"}</div>
+				</div>
 			}
 		};
 
 		let opponent_buttons = move || -> Html {
 			html! {
-				Opponent::iter().map(|opponent| {
-					html! {
-						<button
-							class=format!("opponent__button {}", if self.vs == opponent {"opponent__button--selected"} else {""})
-							onclick=self.link.callback(move |_| Msg::ChangeOpponent(opponent))
-						>
-							{opponent}
-						</button>
+				<div class=format!("opponent {}", if self.board.moves_played > 0 { "opponent--disabled" } else { "" }) >
+					{
+						Opponent::iter().map(|opponent| {
+							html! {
+								<button
+									class=format!("opponent__button {}", if self.vs == opponent {"opponent__button--selected"} else {""})
+									onclick=self.link.callback(move |_| Msg::ChangeOpponent(opponent))
+								>
+									{opponent}
+								</button>
+						}}).collect::<Html>()
 					}
-				}).collect::<Html>()
+				</div>
+			}
+		};
+
+		let floating_piece_class = move || -> &str {
+			match self.board.active_player {
+				RED => "piece--red",
+				YELLOW => "piece--yellow",
 			}
 		};
 
@@ -197,24 +229,27 @@ impl Component for Connect4Board {
 					(0..NUM_COLS).into_iter().map(|col| {
 						return html! {
 							<div class="column" onclick=self.link.callback(move |_| Msg::DropPiece(col))>
-							{
-								(0..NUM_ROWS).into_iter().map(|row| {
-									return html! {
-										<div class="cell">{check_for_piece(row, col)}</div>
-									}
-								}).collect::<Html>()
-							}
+								<div class="cell cell--floating">
+									<div class={format!("piece piece--hidden {}", floating_piece_class())}>{floating_piece_letter()}</div>
+								</div>
+								{
+									(0..NUM_ROWS).into_iter().map(|row| {
+										return html! {
+											<div class="cell">
+												{check_for_piece(row, col)}
+											</div>
+										}
+									}).collect::<Html>()
+								}
 							</div>
 						}
 					}).collect::<Html>()
 				}
 				</div>
-				<div class="opponent">
-					{opponent_buttons()}
-				</div>
+				{game_status()}
 				<div class="dashboard">
-					<button onclick=self.link.callback(move |_| Msg::Reset)>{"Reset Game"}</button>
-					{game_status()}
+					<button onclick=self.link.callback(move |_| Msg::Reset)>{"RESET"}</button>
+					{opponent_buttons()}
 				</div>
 			</div>
 		}

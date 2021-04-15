@@ -13,10 +13,8 @@
 }
 
 .column {
-	background-color: var(--color-primary);
-
-	&:hover {
-		background-color: var(--color-primary-light);
+	&:hover .cell--floating .piece {
+		opacity: 1;
 	}
 }
 
@@ -24,12 +22,15 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	border: 1px solid var(--color-primary-light);
 
+	background: var(--color-primary);
 	width: 10rem;
 	height: 10rem;
 
 	&--floating {
 		background-color: var(--color-white);
+		border: 1px solid transparent;
 	}
 }
 
@@ -39,10 +40,15 @@
 	align-items: center;
 
 	font-size: 2rem;
+	font-weight: bold;
 
-	width: 75%;
-	height: 75%;
+	border: 5px solid var(--color-primary-light);
+
+	width: 85%;
+	height: 85%;
 	border-radius: 50%;
+
+	transition: background 0.1s linear;
 
 	&--floating {
 		border: 3px solid var(--color-primary);
@@ -68,12 +74,12 @@
 	}
 
 	&--red {
-		background-color: var(--color-c4-red);
+		background: var(--color-c4-red);
 		color: var(--color-white);
 	}
 
 	&--yellow {
-		background-color: var(--color-c4-yellow);
+		background: var(--color-c4-yellow);
 	}
 
 	&--toot-n-otto {
@@ -82,12 +88,22 @@
 		font-size: 3rem;
 		font-weight: bold;
 	}
+
+	&--winner {
+		animation: winning-piece 1s linear infinite alternate;
+	}
+
+	&--hidden {
+		opacity: 0;
+		border: 2px solid transparent;
+	}
 }
 
 .dashboard {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	margin-bottom: 2rem;
 
 	align-self: stretch;
 }
@@ -95,7 +111,20 @@
 .opponent {
 	display: flex;
 	justify-content: center;
-	margin-bottom: 2rem;
+
+	&--disabled &__button {
+		border: 2px solid #CCC !important;
+		color: #CCC !important;
+
+		&:hover {
+			background-color: transparent !important;
+		}
+
+		&--selected {
+			background-color: #CCC !important;
+			color: var(--color-white) !important;
+		}
+	}
 
 	&__button {
 		border-radius: 0;
@@ -130,6 +159,84 @@
 		align-self: stretch;
 
 		margin-bottom: 2rem;
+	}
+}
+
+.turn {
+	align-self: stretch;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 2rem;
+
+	&__arrow {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		width: 3rem;
+		height: 3rem;
+		background-color: var(--color-primary);
+
+		transition: clip-path 0.2s linear;
+
+		&--red {
+			background-color: var(--color-c4-red);
+			clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
+		}
+
+		&--yellow {
+			background-color: var(--color-c4-yellow);
+			clip-path: polygon(100% 50%, 0% 100%, 0% 0%);
+		}
+
+		&--left {
+			clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
+		}
+
+		&--right {
+			clip-path: polygon(100% 50%, 0% 100%, 0% 0%);
+		}
+
+		&--game-over {
+			background-color: var(--color-white);
+			border: 2px solid #222;
+			clip-path: none;
+			width: 20rem;
+			font-weight: bold;
+			font-size: 2rem;
+		}
+	}
+
+	&__piece {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		font-size: 2rem;
+		font-weight: bold;
+
+		width: 7rem;
+		height: 7rem;
+		border-radius: 50%;
+
+		&--red {
+			background-color: var(--color-c4-red);
+			color: var(--color-white);
+		}
+
+		&--yellow {
+			background-color: var(--color-c4-yellow);
+		}
+	}
+}
+
+@keyframes winning-piece {
+	from {
+		background-color: auto;
+	}
+	to {
+		background-color: var(--color-victory);
 	}
 }
 
