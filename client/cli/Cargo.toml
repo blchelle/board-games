@@ -5,4 +5,5 @@ authors = ["Brock Chelle <bchelle@ualberta.ca>"]
 edition = "2018"
 
 [dependencies]
-client = { path="../client"}
+strum = "0.20.0"
+strum_macros = "0.20"
