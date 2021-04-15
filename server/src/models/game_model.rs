@@ -1,6 +1,10 @@
+/*
+Database calls to update scores and get scores
+*/
 use crate::MyMongo;
 use bson::doc;
 
+// Game struct
 #[derive(FromForm, Debug, Serialize, Deserialize)]
 pub struct Game {
 	pub username: String,
@@ -12,6 +16,7 @@ pub struct Game {
 	pub to_ties: i32,
 }
 
+// Update score struct
 #[derive(FromForm, Debug, Serialize, Deserialize)]
 pub struct ScoreUpdate {
 	pub username: String,
@@ -20,6 +25,7 @@ pub struct ScoreUpdate {
 }
 
 impl MyMongo {
+	// DB function to update the score
 	pub fn update_score(
 		&mut self,
 		username: &String,
@@ -31,30 +37,30 @@ impl MyMongo {
 			0 => {
 				if win == 1 {
 					doc! {
-					  "xo_wins": 1,
+						"xo_wins": 1,
 					}
 				} else if win == 0 {
 					doc! {
-					  "xo_loss": 1
+						"xo_loss": 1
 					}
 				} else {
 					doc! {
-					  "xo_ties": 1,
+						"xo_ties": 1,
 					}
 				}
 			}
 			1 => {
 				if win == 1 {
 					doc! {
-					  "to_wins": 1,
+						"to_wins": 1,
 					}
 				} else if win == 0 {
 					doc! {
-					  "to_loss": 1
+						"to_loss": 1
 					}
 				} else {
 					doc! {
-					  "to_ties": 1,
+						"to_ties": 1,
 					}
 				}
 			}
@@ -62,7 +68,7 @@ impl MyMongo {
 		};
 		score_db.update_one(
 			doc! {
-			  "username": username
+				"username": username
 			},
 			doc! {"$inc": score},
 			None,
@@ -70,6 +76,7 @@ impl MyMongo {
 		Ok(true)
 	}
 
+	// DB function to get the game scores
 	pub fn get_game_score(
 		&mut self,
 		username: String,

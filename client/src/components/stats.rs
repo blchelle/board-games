@@ -1,3 +1,6 @@
+/*
+Stats component for client
+*/
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fmt::{Display, Formatter};
@@ -10,6 +13,7 @@ use yew::{
 };
 use yew::{html, Callback, Component, ComponentLink, Html, InputData, Properties, ShouldRender};
 
+// Stats page struct
 pub struct Stats {
   link: ComponentLink<Self>,
   username: String,
@@ -19,6 +23,7 @@ pub struct Stats {
   search: String,
 }
 
+// Message passing
 pub enum Msg {
   GetStats,
   ReceiveResponse(Result<GameInfo, anyhow::Error>),
@@ -26,18 +31,20 @@ pub enum Msg {
   Search,
 }
 
+// Game info struct
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GameInfo {
   pub username: String,
-  pub xo_wins: i32,
-  pub xo_loss: i32,
-  pub xo_ties: i32,
-  pub to_wins: i32,
-  pub to_loss: i32,
-  pub to_ties: i32,
+  pub xo_wins: i32, // connect 4 wins
+  pub xo_loss: i32, // connect 4 losses
+  pub xo_ties: i32, // connect 4 ties
+  pub to_wins: i32, // toot and otto wins
+  pub to_loss: i32, // toot and otto losses
+  pub to_ties: i32, // toot and otto ties
 }
 
 impl Stats {
+  // Request to server to fetch stats
   fn get_stats(&mut self, user: String) {
     // let body = &json!({"username": &self.username});
     if user == "" {
@@ -63,6 +70,7 @@ impl Stats {
 impl Component for Stats {
   type Message = Msg;
   type Properties = ();
+  // Create stats component
   fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
     let ls = web_sys::window().unwrap().local_storage().unwrap().unwrap();
     let username = match ls.get_item("user_logged_in") {
@@ -83,6 +91,7 @@ impl Component for Stats {
   }
 
   fn rendered(&mut self, first_render: bool) {
+    // Obtain stats on first render
     if first_render && self.username != "" {
       let user = self.username.to_string();
       self.get_stats(user);
@@ -91,18 +100,18 @@ impl Component for Stats {
 
   fn update(&mut self, msg: Self::Message) -> ShouldRender {
     if self.init {
-      log::info!("gettingstats");
       let user = self.username.to_string();
       self.get_stats(user);
       self.init = false;
     }
     match msg {
       Msg::GetStats => {
+        // Send request to server
         let user = self.username.to_string();
         self.get_stats(user);
       }
       Msg::ReceiveResponse(response) => {
-        log::info!("{:#?}", &response);
+        // Parse response
         match response {
           Ok(res) => self.game_info = Some(res),
           Err(_e) => self.game_info = None,
@@ -110,6 +119,7 @@ impl Component for Stats {
       }
       Msg::UpdateSearch(search) => self.search = search,
       Msg::Search => {
+        // Send request ot server
         let user = self.search.to_string();
         self.get_stats(user);
       }

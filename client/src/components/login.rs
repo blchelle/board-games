@@ -1,9 +1,13 @@
+/*
+Login component for client
+*/
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use yew::format::Json;
 use yew::prelude::*;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
 
+// Login page struct
 pub struct LoginPage {
   link: ComponentLink<Self>,
   username: String,
@@ -11,6 +15,7 @@ pub struct LoginPage {
   fetch_task: Option<FetchTask>,
 }
 
+// Message passing
 pub enum Msg {
   Login(bool),
   Logout,
@@ -19,15 +24,8 @@ pub enum Msg {
   ReceiveResponse(Result<String, anyhow::Error>),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct GameInfo {
-  pub username: String,
-  pub xo_wins: i32,
-  pub xo_total: i32,
-  pub to_wins: i32,
-  pub to_total: i32,
-}
 impl LoginPage {
+  // Send login request to the server and establish a call back
   pub fn login(&mut self, login: bool) {
     if self.username == "" || self.password == "" {
       return;
@@ -52,9 +50,11 @@ impl LoginPage {
     self.fetch_task = Some(task);
   }
 }
+
 impl Component for LoginPage {
   type Message = Msg;
   type Properties = ();
+  // Create component
   fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
     Self {
       link: link,
@@ -70,19 +70,23 @@ impl Component for LoginPage {
         if self.username.len() == 0 || self.password.len() == 0 {
           return false;
         }
-
+        // Send request to server
         self.login(login);
       }
       Msg::UpdateUsername(username) => self.username = username,
       Msg::UpdatePassword(password) => self.password = password,
       Msg::ReceiveResponse(response) => {
+        // Parse response from server
         let window = web_sys::window().unwrap();
         let ls = window.local_storage().unwrap().unwrap();
         match response.unwrap().as_str() {
           "Login success" => {
+            // Add logged in user to local storage
             ls.set_item("user_logged_in", &self.username)
               .expect("Error setting user login");
             log::info!("logged in as {:#?}", &self.username);
+
+            // Navigate to connect 4 page
             let document = window.document().unwrap();
             let location = document.location().unwrap();
             let url = format!(
@@ -94,9 +98,12 @@ impl Component for LoginPage {
             location.set_href(&url).expect("failed");
           }
           "Created user" => {
+            // Add logged in user to local storage
             ls.set_item("user_logged_in", &self.username)
               .expect("Error setting user login");
             log::info!("logged in as {:#?}", &self.username);
+
+            // Navigate to connect 4 page
             let document = window.document().unwrap();
             let location = document.location().unwrap();
             let url = format!(
@@ -108,13 +115,14 @@ impl Component for LoginPage {
             location.set_href(&url).expect("failed");
           }
           _ => {
+            // Clear user login
             ls.set_item("user_logged_in", &"")
               .expect("Error clearing user login");
-            log::info!("login fail");
           }
         }
       }
       Msg::Logout => {
+        // Logout and clear local storage
         let window = web_sys::window().unwrap();
         let ls = window.local_storage().unwrap().unwrap();
         ls.set_item("user_logged_in", &"")
