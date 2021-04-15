@@ -101,7 +101,7 @@ impl Component for Connect4Board {
 					Opponent::HardCPU => 3,
 				};
 
-				self.board.drop(cpu::make_move(self.board, depth));
+				self.board.drop(cpu_con4::make_move(self.board, depth));
 
 				if let Some(winner) = self.board.winner {
 					log::info!("{}", winner);

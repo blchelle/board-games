@@ -110,8 +110,16 @@ fn connect4_cli(lvl : &str) {
     // Displays the empty board before the start of the game
     println!("{}", connect4);
 
-    while !connect4.check_for_win(active_player) {
-        // Switch Players
+    loop {
+        let winner = match connect4.check_for_win(active_player) {
+            Some(_) => Some(active_player),
+            None => None,
+        };        // Switch Players
+
+        if winner.is_some() {
+            break;
+        }
+
         active_player = active_player.switch();
 
         // Display who's turn it is, prompt for a column input
@@ -130,10 +138,10 @@ fn connect4_cli(lvl : &str) {
                 if !is_valid {
                     continue;
                 }
-                is_valid = connect4.drop(active_player, column);
+                is_valid = connect4.drop(column);
             }
         } else {
-            connect4.drop(active_player, cpu_con4::make_move(connect4.clone(), depth));
+            connect4.drop(cpu_con4::make_move(connect4.clone(), depth));
         }
 
         // Displays the board after the input
@@ -222,18 +230,17 @@ fn toot_and_otto_cli(lvl : &str) {
         // Unlike connect for, either player could win on any given move
         // Both players could also win of the piece dropped forms "TOOT"
         // and "OTTO" simultaneously
-        let p1_won = toot_and_otto.check_for_win(Player::TOOT);
-        let p2_won = toot_and_otto.check_for_win(Player::OTTO);
+        if toot_and_otto.is_terminal {
+            break;
+        }
+    }
 
-        if p1_won && !p2_won {
-            println!("Player 1 Won!!!");
-            return;
-        } else if !p1_won && p2_won {
-            println!("Player 2 Won!!!");
-            return;
-        } else if p1_won && p2_won {
-            println!("It's a draw!");
-            return;
+    match toot_and_otto.winner {
+        Some(player) => {
+            println!("Player {} won!", player);
+        }
+        None => {
+            println!("Game drawn :)");
         }
     }
 }
