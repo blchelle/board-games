@@ -1,7 +1,7 @@
 use crate::{
 	connect4::{
 		connect4::{Connect4, NUM_COLS, NUM_ROWS},
-		cpu,
+		cpu_con4,
 		piece_color::{PieceColor, PieceColor::*},
 	},
 	types::opponent::Opponent,
@@ -101,7 +101,7 @@ impl Component for Connect4Board {
 					Opponent::HardCPU => 3,
 				};
 
-				self.board.drop(cpu::make_move(self.board, depth));
+				self.board.drop(cpu_con4::make_move(self.board, depth));
 
 				if let Some(winner) = self.board.winner {
 					log::info!("{}", winner);

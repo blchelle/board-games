@@ -1,6 +1,6 @@
 use crate::{
 	toot_and_otto::{
-		cpu,
+		cpu_toot,
 		piece_letter::{PieceLetter, PieceLetter::*},
 		player::Player::*,
 		toot_and_otto::{TootAndOtto, NUM_COLS, NUM_ROWS},
@@ -102,7 +102,7 @@ impl Component for TootAndOttoBoard {
 					Opponent::MediumCPU => 2,
 					Opponent::HardCPU => 3,
 				};
-				let (best_col, best_letter) = cpu::make_move(self.board, cpu_depth);
+				let (best_col, best_letter) = cpu_toot::make_move(self.board, cpu_depth);
 				self.board.drop(best_letter, best_col);
 				if self.board.is_terminal {
 					match self.board.winner {
