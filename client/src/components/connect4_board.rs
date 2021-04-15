@@ -27,7 +27,7 @@ pub enum Msg {
 }
 
 impl Connect4Board {
-	fn update_score(&mut self, win: bool) {
+	fn update_score(&mut self, win: u8) {
 		let ls = web_sys::window().unwrap().local_storage().unwrap().unwrap();
 		let username = match ls.get_item("user_logged_in") {
 			Ok(a) => match a {
@@ -44,12 +44,12 @@ impl Connect4Board {
 			.header("Content-Type", "application/json")
 			.body(Json(body))
 			.expect("Could not build that request.");
-		let callback =
-			self.link
-				.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
-					let Json(data) = response.into_body();
-					Msg::ReceiveResponse(data)
-				});
+		let callback = self
+			.link
+			.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+				let Json(data) = response.into_body();
+				Msg::ReceiveResponse(data)
+			});
 		// 3. pass the request and callback to the fetch service
 		let task = FetchService::fetch(request, callback).expect("failed to start request");
 		// 4. store the task so it isn't canceled immediately
@@ -81,15 +81,17 @@ impl Component for Connect4Board {
 				if self.board.drop(col) == false {
 					return false;
 				}
-
 				if let Some(winner) = self.board.winner {
+					log::info!("{}", winner);
 					// player is red
 					// update game score
 					match winner {
-						PieceColor::RED => self.update_score(true),
-						PieceColor::YELLOW => self.update_score(false),
+						PieceColor::RED => self.update_score(1),
+						PieceColor::YELLOW => self.update_score(0),
 					}
 					return true;
+				} else if self.board.winner.is_none() && self.board.is_terminal {
+					self.update_score(2);
 				}
 
 				let depth = match self.vs {
@@ -100,6 +102,19 @@ impl Component for Connect4Board {
 				};
 
 				self.board.drop(cpu::make_move(self.board, depth));
+
+				if let Some(winner) = self.board.winner {
+					log::info!("{}", winner);
+					// player is red
+					// update game score
+					match winner {
+						PieceColor::RED => self.update_score(1),
+						PieceColor::YELLOW => self.update_score(0),
+					}
+					return true;
+				} else if self.board.winner.is_none() && self.board.is_terminal {
+					self.update_score(2);
+				}
 			}
 			Msg::Reset => {
 				self.board = Connect4::new();

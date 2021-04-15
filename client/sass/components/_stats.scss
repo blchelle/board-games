@@ -1,10 +1,11 @@
 .stats_page {
-  display: flex;
-	flex-direction: column;
+  // display: flex;
+	// flex-direction: column;
 	justify-content: center;
 	// align-items: center;
   padding: 50px;
 	height: 100%;
+  width: 100%;
 }
 
 .stats_header {
@@ -13,4 +14,14 @@
 .stats_entry {
   font-size: 16px;
   padding: 10px 0 0 0;
+}
+.search {
+  float: right;
+  width: fit-content;
+  display: flex;
+  flex-direction: row;
+}
+#search {
+  padding: 10px;
+  margin: 0 10px 0 0;
 }

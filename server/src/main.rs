@@ -22,16 +22,18 @@ pub struct UserInfo {
 pub struct ScoreUpdate {
     pub username: String,
     pub game: u8, // 0 connect 4, 1 toot
-    pub win: bool,
+    pub win: u8,  // 0 loss, 1 win, 2 tie
 }
 
 #[derive(FromForm, Debug, Serialize, Deserialize)]
 pub struct GameInfo {
     pub username: String,
     pub xo_wins: i32,
-    pub xo_total: i32,
+    pub xo_loss: i32,
+    pub xo_ties: i32,
     pub to_wins: i32,
-    pub to_total: i32,
+    pub to_loss: i32,
+    pub to_ties: i32,
 }
 
 #[get("/")]
@@ -50,7 +52,7 @@ fn new_user(user: Json<UserInfo>) -> Json<String> {
         }
         Err(e) => return Json(String::from("Error connecting to database")),
     }
-    Json(String::from(format!("Created user: {}", user.username)))
+    Json(String::from(format!("Created user")))
 }
 
 #[post("/login", format = "application/json", data = "<user>")]
@@ -91,14 +93,22 @@ fn get_scores(username: &RawStr) -> Json<GameInfo> {
     let err = GameInfo {
         username: "".to_string(),
         xo_wins: -1,
-        xo_total: -1,
+        xo_loss: -1,
+        xo_ties: -1,
         to_wins: -1,
-        to_total: -1,
+        to_loss: -1,
+        to_ties: -1,
     };
     match database::MyMongo::new() {
         Ok(mut db) => {
             match db.get_game_score(username.to_string()) {
-                Ok(r) => return Json(r.unwrap()),
+                Ok(r) => {
+                    if r.is_none() {
+                        return Json(err);
+                    } else {
+                        return Json(r.unwrap());
+                    }
+                }
                 Err(e) => return Json(err),
             };
         }

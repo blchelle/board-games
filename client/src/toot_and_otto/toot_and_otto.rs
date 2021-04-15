@@ -108,7 +108,7 @@ impl TootAndOtto {
 		}
 
 		self.moves_played += 1;
-		if self.moves_played > NUM_COLS * NUM_ROWS {
+		if self.moves_played == NUM_COLS * NUM_ROWS {
 			self.is_terminal = true
 		}
 
