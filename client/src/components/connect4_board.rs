@@ -1,7 +1,7 @@
 use crate::{
 	connect4::{
 		connect4::{Connect4, NUM_COLS, NUM_ROWS},
-		cpu,
+		cpu_con4,
 		piece_color::{PieceColor, PieceColor::*},
 	},
 	types::opponent::Opponent,
@@ -106,17 +106,17 @@ impl Component for Connect4Board {
 					Opponent::EasyCPU => {
 						self
 							.board
-							.drop(self.active_player, cpu::make_move(self.board, 1));
+							.drop(self.active_player, cpu_con4::make_move(self.board, 1));
 					}
 					Opponent::MediumCPU => {
 						self
 							.board
-							.drop(self.active_player, cpu::make_move(self.board, 5));
+							.drop(self.active_player, cpu_con4::make_move(self.board, 5));
 					}
 					Opponent::HardCPU => {
 						self
 							.board
-							.drop(self.active_player, cpu::make_move(self.board, 15));
+							.drop(self.active_player, cpu_con4::make_move(self.board, 15));
 					}
 				};
 

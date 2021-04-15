@@ -12,8 +12,8 @@ use connect4::Connect4;
 mod piece_color;
 use piece_color::PieceColor;
 
-#[path = "../../src/connect4/cpu.rs"]
-mod cpu;
+#[path = "../../src/connect4/cpu_con4.rs"]
+mod cpu_con4;
 
 #[path = "../../src/toot_and_otto/toot_and_otto.rs"]
 mod toot_and_otto;
@@ -23,8 +23,8 @@ use toot_and_otto::TootAndOtto;
 mod piece_letter;
 use piece_letter::PieceLetter;
 
-// #[path = "../../src/toot_and_otto/cpu.rs"]
-// mod cpu;
+#[path = "../../src/toot_and_otto/cpu_toot.rs"]
+mod cpu_toot;
 
 // use piece_letter::PieceLetter;
 
@@ -82,7 +82,27 @@ fn get_input_toot_and_otto() -> (char, usize, bool) {
     (letter, col, true)
 }
 
-fn connect4_cli() {
+fn connect4_cli(lvl : &str) {
+    let mut depth;
+    match lvl {
+        "1" => {
+            depth = 0;
+        },
+        "2" => {
+            depth = 1;
+        },
+        "3" => {
+            depth = 2;
+        },
+        "4" => {
+            depth = 3;
+        },
+        _ => {
+            println!("There is an invalid game setting, thus defaulting to human game");
+            depth = 0;
+        }
+    }
+
     // Initializes the game
     let mut connect4 = Connect4::new();
     let mut active_player = PieceColor::YELLOW;
@@ -99,7 +119,7 @@ fn connect4_cli() {
         println!("==========================");
         println!("Enter the column you want to drop your piece in (0-6)");
 
-        if active_player == PieceColor::RED {
+        if (active_player == PieceColor::RED) || (depth == 0) {
             let mut column: usize;
             let mut is_valid = false;
             // Gets input from the user until their input is valid
@@ -113,8 +133,9 @@ fn connect4_cli() {
                 is_valid = connect4.drop(active_player, column);
             }
         } else {
-            connect4.drop(active_player, cpu::make_move(connect4.clone(), 1));
+            connect4.drop(active_player, cpu_con4::make_move(connect4.clone(), depth));
         }
+
         // Displays the board after the input
         println!("{}", connect4);
     }
@@ -122,7 +143,27 @@ fn connect4_cli() {
     println!("{} player won!", active_player);
 }
 
-fn toot_and_otto_cli() {
+fn toot_and_otto_cli(lvl : &str) {
+    let mut depth;
+    match lvl {
+        "1" => {
+            depth = 0;
+        },
+        "2" => {
+            depth = 1;
+        },
+        "3" => {
+            depth = 5;
+        },
+        "4" => {
+            depth = 15;
+        },
+        _ => {
+            println!("There is an invalid game setting, thus defaulting to human game");
+            depth = 0;
+        }
+    }
+
     // Initializes the game
     let mut toot_and_otto = TootAndOtto::new();
 
@@ -144,26 +185,31 @@ fn toot_and_otto_cli() {
         let mut is_valid = false;
 
         // Gets input from the user until their input is valid
-        while !is_valid {
-            let result = get_input_toot_and_otto();
-            letter = result.0;
-            column = result.1;
-            is_valid = result.2;
+        if (depth == 0) || (active_player == Player::TOOT) {
+            while !is_valid {
+                let result = get_input_toot_and_otto();
+                letter = result.0;
+                column = result.1;
+                is_valid = result.2;
 
-            if !is_valid {
-                continue;
-            }
-
-            let drop_piece = match letter {
-                'T' => PieceLetter::T,
-                'O' => PieceLetter::O,
-                _ => {
-                    println!("Invalid Input, try again");
+                if !is_valid {
                     continue;
                 }
-            };
 
-            is_valid = toot_and_otto.drop(drop_piece, column);
+                let drop_piece = match letter {
+                    'T' => PieceLetter::T,
+                    'O' => PieceLetter::O,
+                    _ => {
+                        println!("Invalid Input, try again");
+                        continue;
+                    }
+                };
+
+                is_valid = toot_and_otto.drop(drop_piece, column);
+            }
+        } else {
+            let res = cpu_toot::make_move(toot_and_otto.clone(), depth);
+            toot_and_otto.drop(res.1, res.0);
         }
 
         // Displays the board after the input
@@ -204,10 +250,21 @@ fn main() {
         return;
     };
 
+    println!("----- ===== ----- ===== ----- ===== -----");
+    println!("1. Human");
+    println!("2. CPU EASY");
+    println!("3. CPU MED");
+    println!("4. CPU HARD");
+    let mut lvl = String::new();
+    if let Err(_) = io::stdin().read_line(&mut lvl) {
+        println!("Input failed, try again");
+        return;
+    };
+
     let game = game.trim();
     if game == "1" {
-        connect4_cli();
+        connect4_cli(lvl.trim());
     } else {
-        toot_and_otto_cli();
+        toot_and_otto_cli(lvl.trim());
     }
 }

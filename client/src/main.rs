@@ -13,12 +13,12 @@ mod components {
 
 mod connect4 {
     pub mod connect4;
-    pub mod cpu;
+    pub mod cpu_con4;
     pub mod piece_color;
 }
 
 mod toot_and_otto {
-    pub mod cpu;
+    pub mod cpu_toot;
     pub mod piece_letter;
     pub mod player;
     pub mod toot_and_otto;
