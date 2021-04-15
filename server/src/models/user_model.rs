@@ -1,3 +1,6 @@
+/*
+Database calls to verify login, and add new users
+*/
 use crate::MyMongo;
 use bson::doc;
 
@@ -8,6 +11,7 @@ pub struct User {
 }
 
 impl MyMongo {
+	// Adds a user to the database
 	pub fn add_user(
 		&mut self,
 		username: &String,
@@ -18,18 +22,19 @@ impl MyMongo {
 		user_db.insert_one(user, None)?;
 		let score_db = self.db.collection("scores");
 		let score = doc! {
-		  "username": username,
-		  "xo_wins": 0,
-		  "xo_ties": 0,
-		  "xo_loss": 0,
-		  "to_wins": 0,
-		  "to_ties": 0,
-		  "to_loss": 0
+			"username": username,
+			"xo_wins": 0,
+			"xo_ties": 0,
+			"xo_loss": 0,
+			"to_wins": 0,
+			"to_ties": 0,
+			"to_loss": 0
 		};
 		score_db.insert_one(score, None)?;
 		Ok(())
 	}
 
+	// Checks if user exists in the database
 	pub fn login(
 		&mut self,
 		username: &String,

@@ -25,6 +25,7 @@ pub struct MyMongo {
 }
 
 impl MyMongo {
+    // Establishes connection to MongoDB
     pub fn new() -> Result<MyMongo, mongodb::error::Error> {
         let mut client_options = ClientOptions::parse("mongodb://localhost:27017")?;
 
@@ -40,6 +41,7 @@ impl MyMongo {
 }
 
 fn main() {
+    // Set up ROCKET
     let cors = CorsOptions::default()
         .allowed_origins(AllowedOrigins::all())
         .allowed_methods(vec![Get, Post].into_iter().map(From::from).collect())
