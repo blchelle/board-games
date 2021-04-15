@@ -44,12 +44,12 @@ impl Connect4Board {
 			.header("Content-Type", "application/json")
 			.body(Json(body))
 			.expect("Could not build that request.");
-		let callback = self
-			.link
-			.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
-				let Json(data) = response.into_body();
-				Msg::ReceiveResponse(data)
-			});
+		let callback =
+			self.link
+				.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+					let Json(data) = response.into_body();
+					Msg::ReceiveResponse(data)
+				});
 		// 3. pass the request and callback to the fetch service
 		let task = FetchService::fetch(request, callback).expect("failed to start request");
 		// 4. store the task so it isn't canceled immediately
@@ -263,7 +263,7 @@ impl Component for Connect4Board {
 				</div>
 				{game_status()}
 				<div class="dashboard">
-					<button onclick=self.link.callback(move |_| Msg::Reset)>{"RESET"}</button>
+					<button class="dashboard__reset" onclick=self.link.callback(move |_| Msg::Reset)>{"RESET"}</button>
 					{opponent_buttons()}
 				</div>
 			</div>
