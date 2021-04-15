@@ -30,12 +30,17 @@ rustup override set nightly
 
 2. Setup the `MongoDB` server
 ```sh
-# Insert some commands here
+Start up mongo server 
+mongod
+use 421ServerDB
 ```
 
 3. Initialize the `users` and `scores` collections with index for `username` on both of them
 ```sh
-# Insert some commands here
+db.createCollection("users")
+db.users.createIndex({"username": 1}, {unique: true})
+db.createCollection("scores")
+db.scores.createIndex({"username": 1}, {unique: true})
 ```
 
 4. Run the `Rust Rocket` project
@@ -70,5 +75,35 @@ Sign up Request
 {
 	"username": "username",
 	"password": "password"
+}
+```
+
+### `POST /update_score`
+
+Update game stats
+
+**JSON Request Format**
+```json
+{
+	"username": "username",
+	"game": 0, // Connect 4: 0, TootnOtto: 1
+	"win": 0	// loss: 0, win: 1, tie: 2
+}
+```
+
+### `GET /scores/<username>`
+
+Gets game stats
+
+**JSON Request Return Format**
+```json
+{
+	"username": "username",
+	"xo_wins": 0, // connect 4 wins
+	"xo_loss": 0,	// connect 4 losses
+	"xo_ties": 0,	// connect 4 ties
+	"to_wins": 0,	// tootnotto wins
+	"to_loss": 0, // tootnotto losses
+	"to_ties": 0	// tootnotto ties
 }
 ```
