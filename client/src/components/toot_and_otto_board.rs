@@ -28,7 +28,7 @@ pub enum Msg {
 }
 
 impl TootAndOttoBoard {
-	fn update_score(&mut self, win: bool) {
+	fn update_score(&mut self, win: u8) {
 		let ls = web_sys::window().unwrap().local_storage().unwrap().unwrap();
 		let username = match ls.get_item("user_logged_in") {
 			Ok(a) => match a {
@@ -45,12 +45,12 @@ impl TootAndOttoBoard {
 			.header("Content-Type", "application/json")
 			.body(Json(body))
 			.expect("Could not build that request.");
-		let callback =
-			self.link
-				.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
-					let Json(data) = response.into_body();
-					Msg::ReceiveResponse(data)
-				});
+		let callback = self
+			.link
+			.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+				let Json(data) = response.into_body();
+				Msg::ReceiveResponse(data)
+			});
 		// 3. pass the request and callback to the fetch service
 		let task = FetchService::fetch(request, callback).expect("failed to start request");
 		// 4. store the task so it isn't canceled immediately
@@ -86,10 +86,11 @@ impl Component for TootAndOttoBoard {
 					match self.board.winner {
 						None => {
 							// TODO: Insert a tie into the db
+							self.update_score(2);
 						}
 						Some(winner) => match winner {
-							OTTO => self.update_score(false),
-							TOOT => self.update_score(true),
+							OTTO => self.update_score(0),
+							TOOT => self.update_score(1),
 						},
 					}
 					return true;
@@ -103,6 +104,19 @@ impl Component for TootAndOttoBoard {
 				};
 				let (best_col, best_letter) = cpu::make_move(self.board, cpu_depth);
 				self.board.drop(best_letter, best_col);
+				if self.board.is_terminal {
+					match self.board.winner {
+						None => {
+							// TODO: Insert a tie into the db
+							self.update_score(2);
+						}
+						Some(winner) => match winner {
+							OTTO => self.update_score(0),
+							TOOT => self.update_score(1),
+						},
+					}
+					return true;
+				}
 			}
 			Msg::ChangeOpponent(opponent) => {
 				self.vs = opponent;

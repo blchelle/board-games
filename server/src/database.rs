@@ -1,6 +1,7 @@
 use super::*;
 use bson::{bson, doc};
-use mongodb::{options::ClientOptions, Client, Database};
+use mongodb::{options::ClientOptions, options::IndexModel, Client, Database};
+
 pub struct MyMongo {
   conn: Client,
   db: Database,
@@ -14,6 +15,12 @@ impl MyMongo {
     // Get a handle to the deployment.
     let conn = Client::with_options(client_options)?;
     let db = conn.database("421ServerDB");
+    // let sort: i32 = 1;
+    // let index = IndexModel {
+    //   keys: doc! {"username": 1},
+    //   options: None
+    // };
+    // db.collection("users").create_indexes(bson! {"username": 1});
     Ok(MyMongo { conn: conn, db: db })
   }
 
@@ -30,9 +37,11 @@ impl MyMongo {
     let score = doc! {
       "username": username,
       "xo_wins": 0,
-      "xo_total": 0,
+      "xo_ties": 0,
+      "xo_loss": 0,
       "to_wins": 0,
-      "to_total": 0
+      "to_ties": 0,
+      "to_loss": 0
     };
     scoredb.insert_one(score, None)?;
     Ok(())
@@ -42,31 +51,37 @@ impl MyMongo {
     &mut self,
     username: &String,
     game: u8,
-    win: bool,
+    win: u8,
   ) -> Result<bool, mongodb::error::Error> {
     let scoredb = self.db.collection("scores");
     let score = match game {
       0 => {
-        if win {
+        if win == 1 {
           doc! {
             "xo_wins": 1,
-            "xo_total": 1
+          }
+        } else if win == 0 {
+          doc! {
+            "xo_loss": 1
           }
         } else {
           doc! {
-            "xo_total": 1
+            "xo_ties": 1,
           }
         }
       }
       1 => {
-        if win {
+        if win == 1 {
           doc! {
             "to_wins": 1,
-            "to_total": 1
+          }
+        } else if win == 0 {
+          doc! {
+            "to_loss": 1
           }
         } else {
           doc! {
-            "to_total": 1
+            "to_ties": 1,
           }
         }
       }
@@ -127,9 +142,11 @@ impl MyMongo {
         let gi = GameInfo {
           username: username,
           xo_wins: r.get("xo_wins").unwrap().as_i32().unwrap_or(-1),
-          xo_total: r.get("xo_total").unwrap().as_i32().unwrap_or(-1),
+          xo_loss: r.get("xo_loss").unwrap().as_i32().unwrap_or(-1),
+          xo_ties: r.get("xo_ties").unwrap().as_i32().unwrap_or(-1),
           to_wins: r.get("to_wins").unwrap().as_i32().unwrap_or(-1),
-          to_total: r.get("to_total").unwrap().as_i32().unwrap_or(-1),
+          to_loss: r.get("to_loss").unwrap().as_i32().unwrap_or(-1),
+          to_ties: r.get("to_ties").unwrap().as_i32().unwrap_or(-1),
         };
         return Ok(Some(gi));
       }

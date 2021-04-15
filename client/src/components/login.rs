@@ -33,7 +33,31 @@ pub struct GameInfo {
   pub to_wins: i32,
   pub to_total: i32,
 }
-
+impl LoginPage {
+  pub fn login(&mut self, login: bool) {
+    if self.username == "" || self.password == "" {
+      return;
+    }
+    let body = &json!({"username": &self.username, "password": &self.password});
+    let request = Request::post(format!(
+      "http://localhost:8000/{}",
+      if login { "login" } else { "new_user" }
+    ))
+    .header("Content-Type", "application/json")
+    .body(Json(body))
+    .expect("Could not build that request.");
+    let callback = self
+      .link
+      .callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+        let Json(data) = response.into_body();
+        Msg::ReceiveResponse(data)
+      });
+    // 3. pass the request and callback to the fetch service
+    let task = FetchService::fetch(request, callback).expect("failed to start request");
+    // 4. store the task so it isn't canceled immediately
+    self.fetch_task = Some(task);
+  }
+}
 impl Component for LoginPage {
   type Message = Msg;
   type Properties = ();
@@ -49,27 +73,7 @@ impl Component for LoginPage {
   fn update(&mut self, msg: Self::Message) -> ShouldRender {
     match msg {
       Msg::Login(login) => {
-        log::info!("{:#?}", self.username);
-        log::info!("{:#?}", self.password);
-        let body = &json!({"username": &self.username, "password": &self.password});
-        let request = Request::post(format!(
-          "http://localhost:8000/{}",
-          if login { "login" } else { "new_user" }
-        ))
-        .header("Content-Type", "application/json")
-        .body(Json(body))
-        .expect("Could not build that request.");
-        let callback =
-          self
-            .link
-            .callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
-              let Json(data) = response.into_body();
-              Msg::ReceiveResponse(data)
-            });
-        // 3. pass the request and callback to the fetch service
-        let task = FetchService::fetch(request, callback).expect("failed to start request");
-        // 4. store the task so it isn't canceled immediately
-        self.fetch_task = Some(task);
+        self.login(login);
       }
       Msg::UpdateUsername(username) => self.username = username,
       Msg::UpdatePassword(password) => self.password = password,
@@ -78,6 +82,20 @@ impl Component for LoginPage {
         let ls = window.local_storage().unwrap().unwrap();
         match response.unwrap().as_str() {
           "Login success" => {
+            ls.set_item("user_logged_in", &self.username)
+              .expect("Error setting user login");
+            log::info!("logged in as {:#?}", &self.username);
+            let document = window.document().unwrap();
+            let location = document.location().unwrap();
+            let url = format!(
+              "{}//{}/{}",
+              location.protocol().expect("error"),
+              location.host().expect("error"),
+              "connect-4/"
+            );
+            location.set_href(&url).expect("failed");
+          }
+          "Created user" => {
             ls.set_item("user_logged_in", &self.username)
               .expect("Error setting user login");
             log::info!("logged in as {:#?}", &self.username);
