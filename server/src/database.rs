@@ -15,12 +15,6 @@ impl MyMongo {
     // Get a handle to the deployment.
     let conn = Client::with_options(client_options)?;
     let db = conn.database("421ServerDB");
-    // let sort: i32 = 1;
-    // let index = IndexModel {
-    //   keys: doc! {"username": 1},
-    //   options: None
-    // };
-    // db.collection("users").create_indexes(bson! {"username": 1});
     Ok(MyMongo { conn: conn, db: db })
   }
 
@@ -111,24 +105,6 @@ impl MyMongo {
       None => return Ok(false),
     }
   }
-
-  // pub fn update_game_score(&mut self, gameInfo: GameInfo) -> Result<(), mongodb::error::Error> {
-  //   let scoredb = self.db.collection("scores");
-  //   let score = doc! {
-  //     "xo_wins": gameInfo.xo_wins,
-  //     "xo_total": gameInfo.xo_total,
-  //     "to_wins": gameInfo.to_wins,
-  //     "to_total": gameInfo.to_total
-  //   };
-  //   scoredb.update_one(
-  //     doc! {
-  //       "username": gameInfo.username
-  //     },
-  //     doc! {"$set": score},
-  //     None,
-  //   )?;
-  //   Ok(())
-  // }
 
   pub fn get_game_score(
     &mut self,
