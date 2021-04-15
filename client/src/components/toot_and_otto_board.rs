@@ -7,15 +7,11 @@ use crate::{
 	},
 	types::opponent::Opponent,
 };
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use strum::IntoEnumIterator;
+use yew::format::Json;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
-use yew::{
-	format::{Json, Nothing},
-	prelude::*,
-};
-use yew::{html, Callback, Component, ComponentLink, Html, InputData, Properties, ShouldRender};
+use yew::{html, Component, ComponentLink, Html, ShouldRender};
 
 pub struct TootAndOttoBoard {
 	link: ComponentLink<Self>,
@@ -32,7 +28,7 @@ pub enum Msg {
 }
 
 impl TootAndOttoBoard {
-	fn update_score(&mut self, win: bool) {
+	fn update_score(&mut self, win: u8) {
 		let ls = web_sys::window().unwrap().local_storage().unwrap().unwrap();
 		let username = match ls.get_item("user_logged_in") {
 			Ok(a) => match a {
@@ -49,12 +45,12 @@ impl TootAndOttoBoard {
 			.header("Content-Type", "application/json")
 			.body(Json(body))
 			.expect("Could not build that request.");
-		let callback = self
-			.link
-			.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
-				let Json(data) = response.into_body();
-				Msg::ReceiveResponse(data)
-			});
+		let callback =
+			self.link
+				.callback(|response: Response<Json<Result<String, anyhow::Error>>>| {
+					let Json(data) = response.into_body();
+					Msg::ReceiveResponse(data)
+				});
 		// 3. pass the request and callback to the fetch service
 		let task = FetchService::fetch(request, callback).expect("failed to start request");
 		// 4. store the task so it isn't canceled immediately
@@ -87,9 +83,15 @@ impl Component for TootAndOttoBoard {
 
 				log::info!("Is game over {}", self.board.is_terminal);
 				if self.board.is_terminal {
-					match self.board.winner.unwrap() {
-						OTTO => self.update_score(false),
-						TOOT => self.update_score(true),
+					match self.board.winner {
+						None => {
+							// TODO: Insert a tie into the db
+							self.update_score(2);
+						}
+						Some(winner) => match winner {
+							OTTO => self.update_score(0),
+							TOOT => self.update_score(1),
+						},
 					}
 					return true;
 				}
@@ -102,9 +104,24 @@ impl Component for TootAndOttoBoard {
 				};
 				let (best_col, best_letter) = cpu_toot::make_move(self.board, cpu_depth);
 				self.board.drop(best_letter, best_col);
+				if self.board.is_terminal {
+					match self.board.winner {
+						None => {
+							// TODO: Insert a tie into the db
+							self.update_score(2);
+						}
+						Some(winner) => match winner {
+							OTTO => self.update_score(0),
+							TOOT => self.update_score(1),
+						},
+					}
+					return true;
+				}
 			}
 			Msg::ChangeOpponent(opponent) => {
-				self.vs = opponent;
+				if self.board.moves_played == 0 {
+					self.vs = opponent;
+				}
 			}
 			Msg::Reset => {
 				self.board = TootAndOtto::new();
@@ -128,28 +145,69 @@ impl Component for TootAndOttoBoard {
 
 	fn view(&self) -> Html {
 		let check_for_piece = move |row: usize, col: usize| -> Html {
-			match self.board.board[row][col] {
-				None => html! {<div class="piece piece--empty"></div>},
-				Some(color) => match color {
-					T => html! {<div class="piece piece--toot-n-otto">{"T"}</div>},
-					O => html! {<div class="piece piece--toot-n-otto">{"O"}</div>},
-				},
+			let mut classes = String::from("piece");
+
+			match self.board.check_for_win(TOOT) {
+				None => {}
+				Some(coordinates) => {
+					if coordinates.contains(&[row, col]) {
+						classes.push_str(" piece--winner");
+					}
+				}
 			}
+
+			match self.board.check_for_win(OTTO) {
+				None => {}
+				Some(coordinates) => {
+					if coordinates.contains(&[row, col]) {
+						classes.push_str(" piece--winner");
+					}
+				}
+			}
+
+			classes.push_str(match self.board.board[row][col] {
+				None => " piece--empty",
+				Some(letter) => match letter {
+					T => " piece--toot-n-otto",
+					O => " piece--toot-n-otto",
+				},
+			});
+
+			let letter = match self.board.board[row][col] {
+				None => String::from(""),
+				Some(l) => format!("{}", l),
+			};
+
+			html! {<div class=classes>{letter}</div>}
 		};
 
 		let game_status = move || -> Html {
-			if self.board.moves_played == NUM_COLS * NUM_ROWS {
-				return html! {<p>{"It's a draw!"}</p>};
+			let mut arrow_color_class = match self.board.active_player {
+				TOOT => "turn__arrow--left",
+				OTTO => "turn__arrow--right",
+			};
+
+			if self.board.is_terminal {
+				arrow_color_class = "turn__arrow--game-over"
 			}
 
-			match self.board.winner {
-				None => {
-					html! {<p>{format!("Turn {}, {}'s Move", self.board.moves_played + 1, self.board.active_player)}</p>}
-				}
-				Some(winner) => match winner {
-					TOOT => html! {<p>{"TOOT (Player 1) Wins!"}</p>},
-					OTTO => html! {<p>{"OTTO (Player 2) Wins!"}</p>},
+			let arrow_text = match self.board.is_terminal {
+				false => "",
+				true => match self.board.winner {
+					Some(winner) => match winner {
+						TOOT => "YOU WIN!!!",
+						OTTO => "CPU WINS :(",
+					},
+					None => "TIE GAME!",
 				},
+			};
+
+			html! {
+				<div class="turn">
+					<div class="turn__piece turn__player--toot">{"TOOT"}</div>
+					<div class=format!("turn__arrow {}", arrow_color_class)>{arrow_text}</div>
+					<div class="turn__piece turn__player--otto">{"OTTO"}</div>
+				</div>
 			}
 		};
 
@@ -233,12 +291,12 @@ impl Component for TootAndOttoBoard {
 						<p class="piece-counts__player__piece">{format!("OTTO's O's: {}", self.board.piece_counts[1][1])}</p>
 					</div>
 				</div>
-				<div class="opponent">
-					{opponent_buttons()}
-				</div>
+				{game_status()}
 				<div class="dashboard">
-					<button onclick=self.link.callback(move |_| Msg::Reset)>{"Reset Game"}</button>
-					{game_status()}
+					<button class="dashboard__reset" onclick=self.link.callback(move |_| Msg::Reset)>{"RESET"}</button>
+					<div class=format!("opponent {}", if self.board.moves_played > 0 { "opponent--disabled" } else { "" })>
+						{opponent_buttons()}
+					</div>
 				</div>
 			</div>
 		}
