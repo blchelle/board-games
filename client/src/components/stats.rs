@@ -111,7 +111,9 @@ impl Component for Stats {
     let gi = self.game_info.as_ref().unwrap();
     if gi.username == "" {
       return html! {
-        <div>{"Please log in to see stats"}</div>
+        <div class="stats_page">
+          <h1 class="stats_header">{"Please log in to see stats"}</h1>
+        </div>
       };
     }
     html! {

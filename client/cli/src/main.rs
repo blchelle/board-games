@@ -1,4 +1,32 @@
 use std::io;
+use strum_macros::EnumIter;
+#[path = "../../src/toot_and_otto/player.rs"]
+mod player;
+use player::Player;
+
+#[path = "../../src/connect4/connect4.rs"]
+mod connect4;
+use connect4::Connect4;
+
+#[path = "../../src/connect4/piece_color.rs"]
+mod piece_color;
+use piece_color::PieceColor;
+
+#[path = "../../src/connect4/cpu.rs"]
+mod cpu;
+
+#[path = "../../src/toot_and_otto/toot_and_otto.rs"]
+mod toot_and_otto;
+use toot_and_otto::TootAndOtto;
+
+#[path = "../../src/toot_and_otto/piece_letter.rs"]
+mod piece_letter;
+use piece_letter::PieceLetter;
+
+// #[path = "../../src/toot_and_otto/cpu.rs"]
+// mod cpu;
+
+// use piece_letter::PieceLetter;
 
 // Gets input from the user and returns a usize and a tuple
 fn get_input_connect4() -> (usize, bool) {
@@ -85,7 +113,7 @@ fn connect4_cli() {
                 is_valid = connect4.drop(active_player, column);
             }
         } else {
-            connect4.drop(active_player, hard_cpu::make_move(connect4.clone()));
+            connect4.drop(active_player, cpu::make_move(connect4.clone(), 1));
         }
         // Displays the board after the input
         println!("{}", connect4);
@@ -98,7 +126,7 @@ fn toot_and_otto_cli() {
     // Initializes the game
     let mut toot_and_otto = TootAndOtto::new();
 
-    let mut active_player = Player::One;
+    let mut active_player = Player::TOOT;
 
     // Displays the empty board before the start of the game
     println!("{}", toot_and_otto);
@@ -148,8 +176,8 @@ fn toot_and_otto_cli() {
         // Unlike connect for, either player could win on any given move
         // Both players could also win of the piece dropped forms "TOOT"
         // and "OTTO" simultaneously
-        let p1_won = toot_and_otto.check_for_win(Player::One);
-        let p2_won = toot_and_otto.check_for_win(Player::Two);
+        let p1_won = toot_and_otto.check_for_win(Player::TOOT);
+        let p2_won = toot_and_otto.check_for_win(Player::OTTO);
 
         if p1_won && !p2_won {
             println!("Player 1 Won!!!");
