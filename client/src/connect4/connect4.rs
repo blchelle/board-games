@@ -5,6 +5,7 @@ use std::fmt::{Display, Formatter, Result};
 #[derive(Copy, Clone)]
 pub struct Connect4 {
 	pub board: Board,
+	pub active_player: PieceColor,
 	pub moves_played: usize,
 	pub is_terminal: bool,
 	pub winner: Option<PieceColor>,
@@ -25,6 +26,7 @@ impl Connect4 {
 		Connect4 {
 			board: [[None; NUM_COLS]; NUM_ROWS],
 			moves_played: 0,
+			active_player: RED,
 			is_terminal: false,
 			winner: None,
 			column_heights: [0; NUM_COLS],
@@ -32,7 +34,7 @@ impl Connect4 {
 	}
 
 	/// Drops a piece of some `color` into a `col` on the the board
-	pub fn drop(&mut self, color: PieceColor, col: usize) -> bool {
+	pub fn drop(&mut self, col: usize) -> bool {
 		// Checks for some simple input errors
 		if col >= NUM_COLS {
 			return false;
@@ -50,14 +52,15 @@ impl Connect4 {
 		let row = NUM_ROWS - 1 - col_height;
 
 		// Inserts the piece into the board
-		self.board[row][col] = Some(color);
+		self.board[row][col] = Some(self.active_player);
 		self.moves_played += 1;
-		self.winner = match self.check_for_win(color) {
-			Some(_) => Some(color),
+		self.winner = match self.check_for_win(self.active_player) {
+			Some(_) => Some(self.active_player),
 			None => None,
 		};
 		self.is_terminal = self.winner != None || self.moves_played == NUM_COLS * NUM_ROWS;
 		self.column_heights[col] += 1;
+		self.active_player = self.active_player.switch();
 
 		true
 	}
@@ -206,7 +209,7 @@ impl Connect4 {
 			}
 		}
 
-		let h_points = score;
+		// let h_points = score;
 		// log::info!("Horizontal {}: {}", color, h_points);
 		// Performs a check across all columns
 		for col in 0..NUM_COLS {
@@ -218,7 +221,7 @@ impl Connect4 {
 				score += calculate_window_score(&window);
 			}
 		}
-		let v_points = score - h_points;
+		// let v_points = score - h_points;
 		// log::info!("Vertical {}: {}", color, v_points);
 
 		// Perform a check across positively sloped diagonals
@@ -235,7 +238,7 @@ impl Connect4 {
 			}
 		}
 
-		let pd_points = score - h_points - v_points;
+		// let pd_points = score - h_points - v_points;
 		// log::info!("Positive Diagonal {}: {}", color, pd_points);
 		// Perform a check across positively sloped diagonals
 		for row in 0..NUM_ROWS - 3 {
@@ -251,7 +254,7 @@ impl Connect4 {
 			}
 		}
 
-		let nd_points = score - h_points - v_points - pd_points;
+		// let nd_points = score - h_points - v_points - pd_points;
 		// log::info!("Negative Diagonal {}: {}", color, nd_points);
 
 		// Gives +2 points for every block in the center column
@@ -266,7 +269,7 @@ impl Connect4 {
 			}
 		}
 
-		let c_points = score - h_points - v_points - pd_points - nd_points;
+		// let c_points = score - h_points - v_points - pd_points - nd_points;
 		// log::info!("Center Diagonal {}: {}", color, c_points);
 
 		score

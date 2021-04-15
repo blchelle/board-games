@@ -1,18 +1,12 @@
 use super::{connect4::Connect4, piece_color::PieceColor::*};
-use std::cmp::{max, min};
+use rand::seq::SliceRandom; // 0.7.2
 
 pub fn make_move(board: Connect4, depth: usize) -> usize {
-	let (col, _) = minmax(board, depth, i32::MIN, i32::MAX, true);
-	return col;
+	let (col, _) = minmax(board, depth, true);
+	col
 }
 
-fn minmax(
-	board: Connect4,
-	depth: usize,
-	mut alpha: i32,
-	mut beta: i32,
-	is_cpu_turn: bool,
-) -> (usize, i32) {
+fn minmax(board: Connect4, depth: usize, is_cpu_turn: bool) -> (usize, i32) {
 	if board.is_terminal {
 		return match board.winner {
 			None => (3, 0), // Draw
@@ -25,7 +19,7 @@ fn minmax(
 		return (3, board.calculate_score(YELLOW));
 	}
 
-	let mut best_col = 0;
+	let mut best_col: usize = 0;
 
 	if is_cpu_turn {
 		let mut value = i32::MIN;
@@ -33,17 +27,19 @@ fn minmax(
 		for col in board.get_columns().iter() {
 			let mut copy_board = board.clone();
 
-			// log::info!("==========Column {} for {}==========", col, YELLOW);
-			if copy_board.drop(YELLOW, *col) == false {
+			if copy_board.drop(*col) == false {
 				continue;
 			}
-			let new_value = minmax(copy_board, depth - 1, alpha, beta, false).1;
-			alpha = max(alpha, new_value);
-			if alpha >= beta {
-				break;
-			}
+			let new_value = minmax(copy_board, depth - 1, false).1;
 
-			if new_value > value {
+			if new_value == value {
+				let random_choice = *vec![(new_value, *col), (value, best_col)]
+					.choose(&mut rand::thread_rng())
+					.unwrap();
+
+				value = random_choice.0;
+				best_col = random_choice.1;
+			} else if new_value > value {
 				value = new_value;
 				best_col = *col;
 			}
@@ -54,18 +50,21 @@ fn minmax(
 		let mut value = i32::MAX;
 		for col in board.get_columns().iter() {
 			let mut copy_board = board.clone();
-			if copy_board.drop(RED, *col) == false {
+			if copy_board.drop(*col) == false {
 				continue;
 			}
 			// log::info!("==========Column {} for {}==========", col, RED);
-			let new_value = minmax(copy_board, depth - 1, alpha, beta, true).1;
-			beta = min(beta, new_value);
-			if alpha >= beta {
-				break;
-			}
+			let new_value = minmax(copy_board, depth - 1, true).1;
 			// let new_value = minimax_with_ab_pruning(copy_board, depth - 1, true).1;
 
-			if new_value < value {
+			if new_value == value {
+				let random_choice = *vec![(new_value, *col), (value, best_col)]
+					.choose(&mut rand::thread_rng())
+					.unwrap();
+
+				value = random_choice.0;
+				best_col = random_choice.1;
+			} else if new_value < value {
 				value = new_value;
 				best_col = *col;
 			}
