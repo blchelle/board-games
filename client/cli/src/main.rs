@@ -84,7 +84,7 @@ fn get_input_toot_and_otto() -> (char, usize, bool) {
 
 fn connect4_cli(lvl : &str) {
     let mut depth;
-    match lvl {
+    match lvl {     // difficult depth level mapping
         "1" => {
             depth = 0;
         },
@@ -98,7 +98,7 @@ fn connect4_cli(lvl : &str) {
             depth = 3;
         },
         _ => {
-            println!("There is an invalid game setting, thus defaulting to human game");
+            println!("There is an invalid game setting, thus defaulting to human v human game");
             depth = 0;
         }
     }
@@ -153,7 +153,7 @@ fn connect4_cli(lvl : &str) {
 
 fn toot_and_otto_cli(lvl : &str) {
     let mut depth;
-    match lvl {
+    match lvl { // cpu search depth
         "1" => {
             depth = 0;
         },
