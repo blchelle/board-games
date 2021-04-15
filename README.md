@@ -20,30 +20,43 @@ trunk serve --port 3000
 ```
 
 ### Server Side Installation
-1. Switch to `Rust Nightly`
+1. Navigate to server/ directory
+```sh
+cd server/
+```
+
+2. Switch to `Rust Nightly`
 ```sh
 rustup update
 cargo update
-cd server/
 rustup override set nightly
 ```
 
-2. Setup the `MongoDB` server
+3. Setup the `MongoDB` server
 ```sh
-Start up mongo server 
 mongod
-use 421ServerDB
 ```
 
-3. Initialize the `users` and `scores` collections with index for `username` on both of them
+4. In a new terminal, open the mongo shell
 ```sh
+mongo
+```
+
+5. In the mongo shell, Initialize the users and scores collections with index for username on both of them
+```sh
+use 421ServerDB
 db.createCollection("users")
 db.users.createIndex({"username": 1}, {unique: true})
 db.createCollection("scores")
 db.scores.createIndex({"username": 1}, {unique: true})
 ```
 
-4. Run the `Rust Rocket` project
+6. Exit the mongo shell
+```sh
+exit
+```
+
+7. Run the `Rust Rocket` project
 ```sh
 cargo run
 ```
