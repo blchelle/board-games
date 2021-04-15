@@ -1,6 +1,6 @@
 use super::*;
 use bson::{bson, doc};
-use mongodb::{options::ClientOptions, options::IndexModel, Client, Database};
+use mongodb::{options::ClientOptions, sync::Client, sync::Database};
 
 pub struct MyMongo {
   conn: Client,

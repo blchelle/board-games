@@ -6,7 +6,7 @@ extern crate rocket;
 extern crate serde_derive;
 
 use bson::{bson, doc};
-use mongodb::{options::ClientOptions, Client};
+use mongodb::options::ClientOptions;
 use rocket::http::Method::{Get, Post};
 use rocket::http::RawStr;
 use rocket_contrib::json::Json;
