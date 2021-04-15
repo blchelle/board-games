@@ -180,6 +180,11 @@ impl Component for LoginPage {
             >
                 {"Login"}
             </button>
+            <div class="separator__container">
+              <div class="separator__line"></div>
+              <p class="separator__label">{"OR"}</p>
+              <div class="separator__line"></div>
+            </div>
             <button
                 class=submit_button_class
                 id="button--signup"
