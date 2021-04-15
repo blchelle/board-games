@@ -66,7 +66,7 @@ impl TootAndOtto {
 		let col_height = self.get_col_height(col);
 
 		if col_height == NUM_ROWS {
-			println!("Column {} is full, Try Again.", col);
+			// println!("Column {} is full, Try Again.", col);
 			return false;
 		}
 
