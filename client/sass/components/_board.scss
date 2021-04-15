@@ -90,12 +90,12 @@
 	}
 
 	&--winner {
-		color: black;
+		animation: winning-piece 1s linear infinite alternate;
 	}
 
 	&--hidden {
 		opacity: 0;
-		border: 2px solid #222;
+		border: 2px solid transparent;
 	}
 }
 
@@ -111,6 +111,20 @@
 .opponent {
 	display: flex;
 	justify-content: center;
+
+	&--disabled &__button {
+		border: 2px solid #CCC !important;
+		color: #CCC !important;
+
+		&:hover {
+			background-color: transparent !important;
+		}
+
+		&--selected {
+			background-color: #CCC !important;
+			color: var(--color-white) !important;
+		}
+	}
 
 	&__button {
 		border-radius: 0;
@@ -143,6 +157,8 @@
 		display: flex;
 		justify-content: space-between;
 		align-self: stretch;
+
+		margin-bottom: 2rem;
 	}
 }
 
@@ -154,19 +170,41 @@
 	margin-bottom: 2rem;
 
 	&__arrow {
-		width: 10rem;
-		height: 7rem;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		width: 3rem;
+		height: 3rem;
+		background-color: var(--color-primary);
 
 		transition: clip-path 0.2s linear;
 
 		&--red {
 			background-color: var(--color-c4-red);
-			clip-path: polygon(40% 0%, 40% 20%, 100% 20%, 100% 80%, 40% 80%, 40% 100%, 0% 50%);
+			clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
 		}
 
 		&--yellow {
 			background-color: var(--color-c4-yellow);
-			clip-path: polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%);
+			clip-path: polygon(100% 50%, 0% 100%, 0% 0%);
+		}
+
+		&--left {
+			clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
+		}
+
+		&--right {
+			clip-path: polygon(100% 50%, 0% 100%, 0% 0%);
+		}
+
+		&--game-over {
+			background-color: var(--color-white);
+			border: 2px solid #222;
+			clip-path: none;
+			width: 20rem;
+			font-weight: bold;
+			font-size: 2rem;
 		}
 	}
 
@@ -193,12 +231,12 @@
 	}
 }
 
-@keyframes fade-in-red-piece {
+@keyframes winning-piece {
 	from {
-		opacity: var(--color-white);
+		background-color: auto;
 	}
 	to {
-		opacity: var(--color-c4-red);
+		background-color: var(--color-victory);
 	}
 }
 
