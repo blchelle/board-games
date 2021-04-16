@@ -1,7 +1,6 @@
 /*
 Login component for client
 */
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use yew::format::Json;
 use yew::prelude::*;
@@ -11,6 +10,7 @@ use yew::services::fetch::{FetchService, FetchTask, Request, Response};
 pub struct LoginPage {
   link: ComponentLink<Self>,
   username: String,
+  error: Option<String>,
   password: String,
   fetch_task: Option<FetchTask>,
 }
@@ -58,6 +58,7 @@ impl Component for LoginPage {
   fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
     Self {
       link: link,
+      error: None,
       username: "".to_string(),
       password: "".to_string(),
       fetch_task: None,
@@ -70,11 +71,23 @@ impl Component for LoginPage {
         if self.username.len() == 0 || self.password.len() == 0 {
           return false;
         }
+
+        if self.username.contains(" ") {
+          self.error = Some(String::from("Invalid username"));
+          return true;
+        }
+
         // Send request to server
         self.login(login);
       }
-      Msg::UpdateUsername(username) => self.username = username,
-      Msg::UpdatePassword(password) => self.password = password,
+      Msg::UpdateUsername(username) => {
+        self.username = username;
+        self.error = None;
+      }
+      Msg::UpdatePassword(password) => {
+        self.password = password;
+        self.error = None;
+      }
       Msg::ReceiveResponse(response) => {
         // Parse response from server
         let window = web_sys::window().unwrap();
@@ -84,7 +97,6 @@ impl Component for LoginPage {
             // Add logged in user to local storage
             ls.set_item("user_logged_in", &self.username)
               .expect("Error setting user login");
-            log::info!("logged in as {:#?}", &self.username);
 
             // Navigate to connect 4 page
             let document = window.document().unwrap();
@@ -101,7 +113,6 @@ impl Component for LoginPage {
             // Add logged in user to local storage
             ls.set_item("user_logged_in", &self.username)
               .expect("Error setting user login");
-            log::info!("logged in as {:#?}", &self.username);
 
             // Navigate to connect 4 page
             let document = window.document().unwrap();
@@ -114,6 +125,8 @@ impl Component for LoginPage {
             );
             location.set_href(&url).expect("failed");
           }
+          "Login failed" => self.error = Some(String::from("Failed to login")),
+          "Username taken" => self.error = Some(String::from("This username is already taken")),
           _ => {
             // Clear user login
             ls.set_item("user_logged_in", &"")
@@ -181,6 +194,15 @@ impl Component for LoginPage {
                 id="login-password"
                 oninput=self.link.callback(|e: InputData| Msg::UpdatePassword(e.value))/>
             </div>
+            {
+              html! {
+                if let Some(message) = &self.error {
+                  html! {<p class="auth__error">{message}</p>}
+                } else {
+                  html! {}
+                }
+              }
+            }
             <button
                 class=submit_button_class
                 id="button--login"

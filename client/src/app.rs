@@ -33,7 +33,7 @@ impl Component for App {
 			AppRoute::Login => html! {<LoginPage/>},
 			AppRoute::Stats => html! {<Stats />},
 			AppRoute::TootAndOtto => html! {<TootAndOttoBoard />},
-			AppRoute::Home => html! {<TootAndOttoBoard/>},
+			AppRoute::Home => html! {<LoginPage/>},
 		});
 
 		html! {

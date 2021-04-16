@@ -82,9 +82,8 @@ impl Component for Connect4Board {
 					return false;
 				}
 				if let Some(winner) = self.board.winner {
-					// log::info!("{}", winner);
-					// player is red
-					// update game score
+					// Player is red
+					// Updates game score
 					match winner {
 						PieceColor::RED => self.update_score(1),
 						PieceColor::YELLOW => self.update_score(0),
@@ -104,8 +103,7 @@ impl Component for Connect4Board {
 				self.board.drop(cpu_con4::make_move(self.board, depth));
 
 				if let Some(winner) = self.board.winner {
-					// log::info!("{}", winner);
-					// player is red
+					// Player is red
 					// update game score
 					match winner {
 						PieceColor::RED => self.update_score(1),
@@ -125,12 +123,8 @@ impl Component for Connect4Board {
 				}
 			}
 			Msg::ReceiveResponse(response) => match response.unwrap().as_str() {
-				"Update success" => {
-					// log::info!("Update success");
-				}
-				_ => {
-					// log::info!("Update fail");
-				}
+				"Update success" => {}
+				_ => {}
 			},
 		};
 

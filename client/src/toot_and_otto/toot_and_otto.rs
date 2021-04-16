@@ -43,7 +43,6 @@ impl TootAndOtto {
 	pub fn drop(&mut self, letter: PieceLetter, col: usize) -> bool {
 		// Checks for some simple input errors
 		if col >= NUM_COLS {
-			println!("Invalid Drop Column, Try Again.");
 			return false;
 		}
 
@@ -66,7 +65,6 @@ impl TootAndOtto {
 		let col_height = self.get_col_height(col);
 
 		if col_height == NUM_ROWS {
-			// println!("Column {} is full, Try Again.", col);
 			return false;
 		}
 
@@ -279,8 +277,6 @@ impl TootAndOtto {
 			}
 		}
 
-		let h_points = score;
-		// log::info!("Horizontal {}: {}", player, h_points);
 		// Performs a check across all columns
 		for col in 0..NUM_COLS {
 			for start_row in 0..NUM_ROWS - 3 {
@@ -291,8 +287,6 @@ impl TootAndOtto {
 				score += calculate_window_score(&window);
 			}
 		}
-		let v_points = score - h_points;
-		// log::info!("Vertical {}: {}", player, v_points);
 
 		// Perform a check across positively sloped diagonals
 		for col in 0..NUM_COLS - 3 {
@@ -306,8 +300,6 @@ impl TootAndOtto {
 			score += calculate_window_score(&window);
 		}
 
-		let pd_points = score - h_points - v_points;
-		// log::info!("Positive Diagonal {}: {}", player, pd_points);
 		// Perform a check across positively sloped diagonals
 		for col in 0..NUM_COLS - 3 {
 			let mut window = vec![];
@@ -319,9 +311,6 @@ impl TootAndOtto {
 			});
 			score += calculate_window_score(&window);
 		}
-
-		let nd_points = score - h_points - v_points - pd_points;
-		// log::info!("Negative Diagonal {}: {}", player, nd_points);
 
 		score
 	}

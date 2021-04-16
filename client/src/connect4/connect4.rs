@@ -155,8 +155,6 @@ impl Connect4 {
 			let mut empty_no_below_count = 0;
 			let mut empty_with_below_count = 0;
 
-			// log::info!("{:?}", window);
-
 			for cell in window.iter() {
 				match cell.0 {
 					None => match cell.1 {
@@ -193,8 +191,6 @@ impl Connect4 {
 			}
 		};
 
-		// log::info!("{}\nColumn Heights: {:?}", self, self.column_heights);
-
 		// Performs a check across all rows
 		for row in 0..NUM_ROWS {
 			for start_col in 0..NUM_COLS - 3 {
@@ -209,8 +205,6 @@ impl Connect4 {
 			}
 		}
 
-		// let h_points = score;
-		// log::info!("Horizontal {}: {}", color, h_points);
 		// Performs a check across all columns
 		for col in 0..NUM_COLS {
 			for start_row in 0..NUM_ROWS - 3 {
@@ -221,8 +215,6 @@ impl Connect4 {
 				score += calculate_window_score(&window);
 			}
 		}
-		// let v_points = score - h_points;
-		// log::info!("Vertical {}: {}", color, v_points);
 
 		// Perform a check across positively sloped diagonals
 		for row in NUM_ROWS - 3..NUM_ROWS {
@@ -238,8 +230,6 @@ impl Connect4 {
 			}
 		}
 
-		// let pd_points = score - h_points - v_points;
-		// log::info!("Positive Diagonal {}: {}", color, pd_points);
 		// Perform a check across positively sloped diagonals
 		for row in 0..NUM_ROWS - 3 {
 			for col in 0..NUM_COLS - 3 {
@@ -254,9 +244,6 @@ impl Connect4 {
 			}
 		}
 
-		// let nd_points = score - h_points - v_points - pd_points;
-		// log::info!("Negative Diagonal {}: {}", color, nd_points);
-
 		// Gives +2 points for every block in the center column
 		for row in 0..NUM_ROWS {
 			match self.board[row][3] {
@@ -268,9 +255,6 @@ impl Connect4 {
 				}
 			}
 		}
-
-		// let c_points = score - h_points - v_points - pd_points - nd_points;
-		// log::info!("Center Diagonal {}: {}", color, c_points);
 
 		score
 	}
