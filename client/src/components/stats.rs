@@ -2,16 +2,11 @@
 Stats component for client
 */
 use serde::{Deserialize, Serialize};
-use serde_json::json;
-use std::fmt::{Display, Formatter};
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
 use yew::services::fetch::{FetchService, FetchTask, Request, Response};
 use yew::{
   format::{Json, Nothing},
   prelude::*,
 };
-use yew::{html, Callback, Component, ComponentLink, Html, InputData, Properties, ShouldRender};
 
 // Stats page struct
 pub struct Stats {
@@ -25,7 +20,6 @@ pub struct Stats {
 
 // Message passing
 pub enum Msg {
-  GetStats,
   ReceiveResponse(Result<GameInfo, anyhow::Error>),
   UpdateSearch(String),
   Search,
@@ -46,10 +40,11 @@ pub struct GameInfo {
 impl Stats {
   // Request to server to fetch stats
   fn get_stats(&mut self, user: String) {
-    // let body = &json!({"username": &self.username});
     if user == "" {
       return;
     }
+
+    log::info!("User {}", user);
     let request = Request::get(format!("http://localhost:8000/scores/{}", &user))
       .header("Content-Type", "application/json")
       .body(Nothing)
@@ -105,11 +100,6 @@ impl Component for Stats {
       self.init = false;
     }
     match msg {
-      Msg::GetStats => {
-        // Send request to server
-        let user = self.username.to_string();
-        self.get_stats(user);
-      }
       Msg::ReceiveResponse(response) => {
         // Parse response
         match response {
@@ -170,7 +160,7 @@ impl Component for Stats {
     html! {
       <div class="stats_page">
         <div class="search">
-          <input type="text" name="Search" id="search" placeholder="username" value={&self.search}
+          <input type="text" name="Search" id="search" placeholder="Username" value={&self.search}
             oninput=self.link.callback(|e: InputData| Msg::UpdateSearch(e.value))/>
           <button onclick=self.link.callback(move |_| Msg::Search)>{"Search"}</button>
         </div>

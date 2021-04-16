@@ -1,8 +1,14 @@
+// Credit for this file implementation goes to:
+// https://github.com/yewstack/yew/blob/master/examples/router/src/switch.rs
+//
+// This is from an example from the official yew repository on how to setup the
+// router in the web browser
+
 use yew::{
 	virtual_dom::{Transformer, VComp},
 	web_sys::Url,
 };
-use yew_router::{components::RouterAnchor, prelude::*};
+use yew_router::prelude::*;
 
 #[derive(Clone, Debug, Switch)]
 pub enum AppRoute {
@@ -88,8 +94,6 @@ impl Transformer<AppRoute, PublicUrlSwitch> for VComp {
 	}
 }
 
-// type aliases to make life just a bit easier
+// Type aliases to make life just a bit easier
 pub type AppRouter = Router<PublicUrlSwitch>;
-pub type AppAnchor = RouterAnchor<PublicUrlSwitch>;
-
 pub type RouterButton = yew_router::components::RouterButton<AppRoute>;

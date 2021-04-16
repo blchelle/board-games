@@ -74,14 +74,11 @@ impl Component for TootAndOttoBoard {
 		match msg {
 			Msg::DropPiece(letter, col) => {
 				if self.board.is_terminal == true {
-					// log::info!("Game over");
 					return false;
 				} else if self.board.drop(letter, col) == false {
-					// log::info!("Failed to drop");
 					return false;
 				}
 
-				log::info!("Is game over {}", self.board.is_terminal);
 				if self.board.is_terminal {
 					match self.board.winner {
 						None => {
@@ -127,12 +124,8 @@ impl Component for TootAndOttoBoard {
 				self.board = TootAndOtto::new();
 			}
 			Msg::ReceiveResponse(response) => match response.unwrap().as_str() {
-				"Update success" => {
-					// log::info!("Update success");
-				}
-				_ => {
-					// log::info!("Update fail");
-				}
+				"Update success" => {}
+				_ => {}
 			},
 		}
 
